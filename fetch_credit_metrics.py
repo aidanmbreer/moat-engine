@@ -133,10 +133,15 @@ def interest_expense(ticker, us_gaap, fiscal_year_end):
     )
 
 
-def compute_credit_metrics(ticker, us_gaap):
+def compute_credit_metrics(ticker, us_gaap, fiscal_year_end=None):
+    """If fiscal_year_end is None, targets the most recent 10-K (existing
+    behavior, unchanged) — the value simply passes through to
+    fetch_margins.compute_margins(), which resolves it. Given an explicit
+    period end, runs the same debt/cash/D&A/interest resolution against
+    that year instead — used for multi-year pulls."""
     flags = []
 
-    margins = fetch_margins.compute_margins(ticker, us_gaap)
+    margins = fetch_margins.compute_margins(ticker, us_gaap, fiscal_year_end=fiscal_year_end)
     fiscal_year_end = margins["fiscal_year_end"]
     fiscal_year = margins["fiscal_year"]
     operating_income = margins["operating_income"]
@@ -145,8 +150,10 @@ def compute_credit_metrics(ticker, us_gaap):
     total_debt = debt["total"]
 
     cash, cash_tag, cash_note = cash_and_equivalents(us_gaap, fiscal_year_end)
+    cash_flags = []
     if cash_note:
-        flags.append(f"{cash_tag} used instead of CashAndCashEquivalentsAtCarryingValue — {cash_note}")
+        cash_flags.append(f"{cash_tag} used instead of CashAndCashEquivalentsAtCarryingValue — {cash_note}")
+        flags.extend(cash_flags)
 
     da_value, da_tag, da_flags = depreciation_and_amortization(ticker, us_gaap, fiscal_year_end)
     flags.extend(da_flags)
@@ -188,6 +195,7 @@ def compute_credit_metrics(ticker, us_gaap):
     return {
         "ticker": ticker,
         "fiscal_year": fiscal_year,
+        "fiscal_year_end": fiscal_year_end,
         "operating_income": operating_income,
         "da": da_value,
         "da_tag": da_tag,
@@ -201,6 +209,10 @@ def compute_credit_metrics(ticker, us_gaap):
         "net_leverage": net_leverage,
         "interest_coverage": interest_coverage,
         "flags": flags,
+        "margins_flags": margins["flags"],
+        "da_flags": da_flags,
+        "interest_flags": interest_flags,
+        "cash_flags": cash_flags,
     }
 
 

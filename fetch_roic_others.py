@@ -272,17 +272,35 @@ def operating_income_via_proxy(ticker, us_gaap, fiscal_year_end):
     return value
 
 
-def compute_roic(ticker, us_gaap):
+def compute_roic(ticker, us_gaap, fiscal_year_end=None):
+    """If fiscal_year_end is None, targets the most recent 10-K (existing
+    behavior, unchanged). If given an explicit period end, runs the exact
+    same debt/equity/cash/tax-rate resolution and derivation logic against
+    that year instead — used for multi-year pulls. Every existing caller
+    passes no fiscal_year_end and is unaffected.
+
+    The operating-income check is restated (not behaviorally changed) to
+    work for either case: does OperatingIncomeLoss have a fact for exactly
+    this period end? That's equivalent to the original "most recent" logic
+    (comparing the latest tagged OperatingIncomeLoss fact's fiscal year to
+    the reference fiscal year) but also works when the reference year isn't
+    the most recent one.
+    """
     flags = []
 
     # IncomeTaxExpenseBenefit is reported every year a 10-K is filed, so its
-    # fiscal year is a reliable "most recent FY" reference point.
-    tax_expense_fact = most_recent_annual_duration_fact(us_gaap, "IncomeTaxExpenseBenefit")
+    # fiscal year is a reliable reference point.
+    if fiscal_year_end is None:
+        tax_expense_fact = most_recent_annual_duration_fact(us_gaap, "IncomeTaxExpenseBenefit")
+    else:
+        tax_expense_fact = annual_duration_fact_at(us_gaap, "IncomeTaxExpenseBenefit", fiscal_year_end)
     reference_fiscal_year_end = tax_expense_fact["end"]
     reference_fy = tax_expense_fact["fy"]
 
-    operating_income_fact = most_recent_annual_duration_fact(us_gaap, "OperatingIncomeLoss")
-    if operating_income_fact["fy"] != reference_fy:
+    operating_income_fact = annual_duration_fact_at(
+        us_gaap, "OperatingIncomeLoss", reference_fiscal_year_end, required=False
+    )
+    if operating_income_fact is None:
         proxy_value = operating_income_via_proxy(ticker, us_gaap, reference_fiscal_year_end)
         if proxy_value is None:
             candidates = tags_at_date(us_gaap, reference_fiscal_year_end, "Revenue")
@@ -290,11 +308,9 @@ def compute_roic(ticker, us_gaap):
             candidates.update(tags_at_date(us_gaap, reference_fiscal_year_end, "Expense"))
             candidate_lines = "\n".join(f"    {tag}: ${val:,}" for tag, val in sorted(candidates.items()))
             raise RuntimeError(
-                f"OperatingIncomeLoss is stale: latest tagged value is FY{operating_income_fact['fy']} "
-                f"(ended {operating_income_fact['end']}), but the filer's most recent 10-K is FY{reference_fy} "
-                f"(ended {reference_fiscal_year_end}), and the Revenue - COGS - SG&A - R&D proxy tags are "
-                f"also incomplete. Revenue/cost/expense tags available as of {reference_fiscal_year_end} "
-                f"for hand-reconstruction:\n{candidate_lines}"
+                f"OperatingIncomeLoss not tagged for FY ended {reference_fiscal_year_end}, and the "
+                f"Revenue - COGS - SG&A - R&D proxy tags are also incomplete. Revenue/cost/expense tags "
+                f"available as of {reference_fiscal_year_end} for hand-reconstruction:\n{candidate_lines}"
             )
         operating_income = proxy_value
         fiscal_year_end = reference_fiscal_year_end
@@ -305,8 +321,13 @@ def compute_roic(ticker, us_gaap):
         fiscal_year_end = operating_income_fact["end"]
         fiscal_year = operating_income_fact["fy"]
 
-    pretax_income_fact = most_recent_annual_duration_fact(
-        us_gaap, "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest"
+    # fiscal_year_end is a concrete date by this point regardless of what the
+    # function's fiscal_year_end argument was, so this always targets the
+    # exact period already settled on above.
+    pretax_income_fact = annual_duration_fact_at(
+        us_gaap,
+        "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+        fiscal_year_end,
     )
 
     try:
@@ -380,6 +401,7 @@ def compute_roic(ticker, us_gaap):
     return {
         "ticker": ticker,
         "fiscal_year": fiscal_year,
+        "fiscal_year_end": fiscal_year_end,
         "operating_income": operating_income,
         "effective_tax_rate": effective_tax_rate,
         "nopat": nopat,
@@ -388,6 +410,7 @@ def compute_roic(ticker, us_gaap):
         "cash": cash,
         "invested_capital": invested_capital,
         "roic": roic,
+        "flags": flags,
     }
 
 

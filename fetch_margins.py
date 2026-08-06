@@ -39,6 +39,25 @@ REVENUE_TAGS = ["RevenueFromContractWithCustomerExcludingAssessedTax", "Revenues
 COST_OF_REVENUE_TAG_CANDIDATES = ["CostOfRevenue", "CostOfGoodsAndServicesSold"]
 
 
+def recent_fiscal_year_ends(us_gaap, count=5):
+    """The `count` most recent distinct fiscal year ends (form=10-K,
+    fp=FY) found across ALL revenue tag candidates (unioned, not just
+    the first one present) — a company can switch which revenue tag it
+    uses partway through the window, and period discovery shouldn't
+    silently lose the years reported under the other tag. Pure period
+    discovery, doesn't touch any calculation; used to find which years to
+    run compute_margins()/compute_roic()/compute_credit_metrics() against
+    for a multi-year pull."""
+    ends = set()
+    for tag in REVENUE_TAGS:
+        if tag in us_gaap:
+            facts = us_gaap[tag]["units"]["USD"]
+            ends.update(f["end"] for f in facts if f["form"] == "10-K" and f["fp"] == "FY")
+    if not ends:
+        raise RuntimeError(f"No revenue tag found (tried: {', '.join(REVENUE_TAGS)}) to discover fiscal year ends")
+    return sorted(ends, reverse=True)[:count]
+
+
 def sec_get(url):
     global calls_made
     if calls_made >= MAX_CALLS:
@@ -160,17 +179,33 @@ def operating_income_via_proxy(ticker, us_gaap, fiscal_year_end):
     return value
 
 
-def compute_margins(ticker, us_gaap):
+def compute_margins(ticker, us_gaap, fiscal_year_end=None):
+    """If fiscal_year_end is None, targets the most recent 10-K (existing
+    behavior, unchanged). If given an explicit period end, runs the exact
+    same tag-resolution and derivation logic against that year instead —
+    used for multi-year pulls. Every existing caller passes no
+    fiscal_year_end and is unaffected."""
     print(f"=== {ticker} ===")
     flags = []
 
     revenue_fact = None
-    for tag in REVENUE_TAGS:
-        if tag in us_gaap:
-            revenue_fact = most_recent_annual_duration_fact(us_gaap, tag)
-            break
-    if revenue_fact is None:
-        raise RuntimeError(f"No revenue tag found (tried: {', '.join(REVENUE_TAGS)})")
+    if fiscal_year_end is None:
+        for tag in REVENUE_TAGS:
+            if tag in us_gaap:
+                revenue_fact = most_recent_annual_duration_fact(us_gaap, tag)
+                break
+        if revenue_fact is None:
+            raise RuntimeError(f"No revenue tag found (tried: {', '.join(REVENUE_TAGS)})")
+    else:
+        for tag in REVENUE_TAGS:
+            fact = annual_duration_fact_at(us_gaap, tag, fiscal_year_end, required=False)
+            if fact is not None:
+                revenue_fact = fact
+                break
+        if revenue_fact is None:
+            raise RuntimeError(
+                f"No revenue tag found ending {fiscal_year_end} (tried: {', '.join(REVENUE_TAGS)})"
+            )
 
     fiscal_year_end = revenue_fact["end"]
     fiscal_year = revenue_fact["fy"]
