@@ -9,31 +9,50 @@
   .subtitle { color: #555; margin-bottom: 1.5rem; font-size: 0.9rem; }
   table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
   th, td { border: 1px solid #ddd; padding: 8px 10px; text-align: right; }
-  th { background: #1f4e78; color: #fff; text-align: center; position: sticky; top: 0; }
+  th { background: #1f4e78; color: #fff; text-align: center; }
+  th.section { font-size: 0.85rem; letter-spacing: 0.04em; }
+  th.section-moat { background: #dce6f1; color: #1a1a1a; }
+  th.section-credit { background: #fce4d6; color: #1a1a1a; }
+  th.section-id { background: #f2f2f2; color: #1a1a1a; }
+  td.divider-left, th.divider-left { border-left: 3px solid #999; }
   td:first-child, th:first-child { text-align: left; font-weight: 600; }
   td.concentration { text-align: left; }
-  tr:nth-child(even) { background: #f7f9fb; }
+  tr:nth-child(even) td { background: #f7f9fb; }
   .pos { color: #0a6b0a; }
   .neg { color: #b3261e; }
   .footnote { margin-top: 1.5rem; font-size: 0.8rem; color: #666; max-width: 800px; }
+  .flags { margin-top: 1rem; font-size: 0.85rem; color: #333; max-width: 800px; }
+  .flags h2 { font-size: 0.95rem; margin-bottom: 0.4rem; }
+  .flags li { margin-bottom: 0.4rem; }
 </style>
 </head>
 <body>
 <h1>Consolidated Metrics Comparison</h1>
 <div class="subtitle">VRT, ETN, PWR, NVT — FY2025 — spreads are vs. the peer average (mean of all four companies)</div>
 <table>
-<thead><tr><th>Ticker</th><th>FY</th><th>Revenue</th><th>Gross Margin</th><th>Gross Margin Spread vs. Peer Avg</th><th>Operating Margin</th><th>Operating Margin Spread vs. Peer Avg</th><th>ROIC</th><th>ROIC Spread vs. Peer Avg</th><th>Customer Concentration</th></tr></thead>
+<thead>
+<tr><th class="section section-id" colspan="2"></th><th class="section section-moat" colspan="8">MOAT METRICS</th><th class="section section-credit divider-left" colspan="3">CREDIT / LEVERAGE</th></tr>
+<tr><th>Ticker</th><th>FY</th><th>Revenue</th><th>Gross Margin</th><th>Gross Margin Spread vs. Peer Avg</th><th>Operating Margin</th><th>Operating Margin Spread vs. Peer Avg</th><th>ROIC</th><th>ROIC Spread vs. Peer Avg</th><th>Customer Concentration</th><th class="divider-left">Debt / EBITDA</th><th>Net Debt / EBITDA</th><th>Interest Coverage (EBITDA / Interest)</th></tr>
+</thead>
 <tbody>
-<tr><td>VRT</td><td>2025</td><td>$10,229,900,000</td><td>36.32%</td><td class="pos">+4.7pp</td><td>17.89%</td><td class="pos">+3.3pp</td><td>26.07%</td><td class="pos">+11.5pp</td><td class="concentration">Not disclosed</td></tr>
-<tr><td>ETN</td><td>2025</td><td>$27,448,000,000</td><td>37.59%</td><td class="pos">+5.9pp</td><td>18.98%</td><td class="pos">+4.4pp</td><td>14.73%</td><td class="pos">+0.2pp</td><td class="concentration">No customer exceeds 10%</td></tr>
-<tr><td>PWR</td><td>2025</td><td>$28,479,697,000</td><td>15.01%</td><td class="neg">-16.7pp</td><td>5.66%</td><td class="neg">-8.9pp</td><td>8.16%</td><td class="neg">-6.4pp</td><td class="concentration">Largest customer: 8%; top 10: 30%</td></tr>
-<tr><td>NVT</td><td>2025</td><td>$3,893,100,000</td><td>37.74%</td><td class="pos">+6.1pp</td><td>15.84%</td><td class="pos">+1.3pp</td><td>9.29%</td><td class="neg">-5.3pp</td><td class="concentration">Largest customer: 11%</td></tr>
+<tr><td>VRT</td><td>2025</td><td>$10,229,900,000</td><td>36.32%</td><td class="pos">+4.7pp</td><td>17.89%</td><td class="pos">+3.3pp</td><td>26.07%</td><td class="pos">+11.5pp</td><td class="concentration">Not disclosed</td><td class="divider-left">1.48x</td><td>0.67x</td><td>24.84x</td></tr>
+<tr><td>ETN</td><td>2025</td><td>$27,448,000,000</td><td>37.59%</td><td class="pos">+5.9pp</td><td>18.98%</td><td class="pos">+4.4pp</td><td>14.73%</td><td class="pos">+0.2pp</td><td class="concentration">No customer exceeds 10%</td><td class="divider-left">1.69x</td><td>1.59x</td><td>25.79x</td></tr>
+<tr><td>PWR</td><td>2025</td><td>$28,479,697,000</td><td>15.01%</td><td class="neg">-16.7pp</td><td>5.66%</td><td class="neg">-8.9pp</td><td>8.16%</td><td class="neg">-6.4pp</td><td class="concentration">Largest customer: 8%; top 10: 30%</td><td class="divider-left">2.50x</td><td>2.33x</td><td>9.65x</td></tr>
+<tr><td>NVT</td><td>2025</td><td>$3,893,100,000</td><td>37.74%</td><td class="pos">+6.1pp</td><td>15.84%</td><td class="pos">+1.3pp</td><td>9.29%</td><td class="neg">-5.3pp</td><td class="concentration">Largest customer: 11%</td><td class="divider-left">2.04x</td><td>1.75x</td><td>10.99x</td></tr>
 </tbody>
 </table>
 <div class="footnote">
 Revenue, gross margin, and operating margin from fetch_margins.py; ROIC from fetch_roic_others.py;
-customer concentration extracted from each company's most recent 10-K by fetch_customer_concentration.py.
+customer concentration extracted from each company's most recent 10-K by fetch_customer_concentration.py;
+debt/EBITDA, net debt/EBITDA, and interest coverage from fetch_credit_metrics.py (which itself reuses
+total_debt_for_roic() and fetch_margins's operating income, not re-derived).
 ETN operating margin uses the derived proxy (Revenue - COGS - SG&amp;A - R&amp;D); no tagged OperatingIncomeLoss for FY2025.
 </div>
+<div class="flags"><h2>Credit / Leverage — flags to hand-check</h2><ul><li><strong>ETN</strong> — InterestExpense tag not reported for FY ended 2025-12-31; used InterestExpenseNonoperating instead.</li>
+<li><strong>PWR</strong> — No combined DepreciationDepletionAndAmortization tag; D&A derived as Depreciation ($411,538,000) + AmortizationOfIntangibleAssets ($498,795,000) = $910,333,000. Excludes finance-lease right-of-use asset amortization if separately tagged — hand-check against the cash flow statement.</li>
+<li><strong>PWR</strong> — InterestExpense tag not reported for FY ended 2025-12-31; used InterestExpenseNonoperating instead.</li>
+<li><strong>NVT</strong> — CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents used instead of CashAndCashEquivalentsAtCarryingValue — may include a small restricted-cash component — hand-check against the balance sheet</li>
+<li><strong>NVT</strong> — No combined DepreciationDepletionAndAmortization tag; D&A derived as Depreciation ($60,700,000) + AmortizationOfIntangibleAssets ($147,100,000) = $207,800,000. Excludes finance-lease right-of-use asset amortization if separately tagged — hand-check against the cash flow statement.</li>
+<li><strong>NVT</strong> — No gross interest expense tag (InterestExpense / InterestExpenseNonoperating) reported for FY ended 2025-12-31; used |InterestIncomeExpenseNet| = $75,000,000 instead. This is interest expense NET of interest income, not gross interest expense — EBITDA/interest coverage will read stronger than on a gross-expense basis. Hand-check against the filing's interest expense footnote.</li></ul></div>
 </body>
 </html>
