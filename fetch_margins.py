@@ -188,11 +188,12 @@ def compute_margins(ticker, us_gaap, fiscal_year_end=None):
     print(f"=== {ticker} ===")
     flags = []
 
-    revenue_fact = None
+    revenue_fact, revenue_tag = None, None
     if fiscal_year_end is None:
         for tag in REVENUE_TAGS:
             if tag in us_gaap:
                 revenue_fact = most_recent_annual_duration_fact(us_gaap, tag)
+                revenue_tag = tag
                 break
         if revenue_fact is None:
             raise RuntimeError(f"No revenue tag found (tried: {', '.join(REVENUE_TAGS)})")
@@ -200,7 +201,7 @@ def compute_margins(ticker, us_gaap, fiscal_year_end=None):
         for tag in REVENUE_TAGS:
             fact = annual_duration_fact_at(us_gaap, tag, fiscal_year_end, required=False)
             if fact is not None:
-                revenue_fact = fact
+                revenue_fact, revenue_tag = fact, tag
                 break
         if revenue_fact is None:
             raise RuntimeError(
@@ -249,7 +250,7 @@ def compute_margins(ticker, us_gaap, fiscal_year_end=None):
     operating_margin = operating_income / revenue
 
     print(f"Fiscal year: FY{fiscal_year} (ended {fiscal_year_end})")
-    print(f"Revenue: ${revenue:,}")
+    print(f"Revenue [{revenue_tag}]: ${revenue:,}")
     print(f"Cost of revenue [{cost_of_revenue_tag}]: ${cost_of_revenue_val:,}")
     print(f"Gross profit: ${gross_profit:,}")
     print(f"Gross margin: {gross_margin:.2%}")
@@ -264,7 +265,9 @@ def compute_margins(ticker, us_gaap, fiscal_year_end=None):
         "fiscal_year": fiscal_year,
         "fiscal_year_end": fiscal_year_end,
         "revenue": revenue,
+        "revenue_tag": revenue_tag,
         "cost_of_revenue": cost_of_revenue_val,
+        "cost_of_revenue_tag": cost_of_revenue_tag,
         "gross_profit": gross_profit,
         "gross_margin": gross_margin,
         "operating_income": operating_income,
