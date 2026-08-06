@@ -76,6 +76,47 @@ def most_recent_annual_duration_fact(us_gaap, tag):
     return max(annual_facts, key=lambda f: f["end"])
 
 
+def most_recent_fact_among_candidates(us_gaap, candidate_tags):
+    """Among `candidate_tags` (in preference order), find the one whose
+    own most-recent form=10-K, fp=FY fact is genuinely the most recent
+    across ALL candidates — not just the first candidate that happens to
+    exist anywhere in the filer's history.
+
+    This is the fix for a real bug: a filer can switch which tag it uses
+    for a concept partway through its history (NVDA moved off
+    RevenueFromContractWithCustomerExcludingAssessedTax, which stops
+    having data after FY2022, onto a plain Revenues tag that carries
+    data through the current filing). The old logic picked whichever
+    candidate merely existed in us_gaap, found *that* tag's own most
+    recent fact, and stopped — for NVDA that silently returned FY2022
+    data under a technically-matched but stale tag. This function
+    instead resolves every candidate's own most-recent fact first, then
+    picks whichever one is genuinely most recent.
+
+    Ties (the same most-recent end date under multiple candidates) keep
+    the existing preference order — the first candidate to reach that
+    end date wins, later ones don't displace it.
+
+    Works identically to most_recent_annual_duration_fact() for a
+    single-tag, single-candidate list, so this is a safe drop-in even
+    where there's currently no alternate tag name to fall back to.
+
+    Returns (fact, tag) for the winning candidate, or (None, None) if no
+    candidate has any form=10-K, fp=FY data at all.
+    """
+    best_fact, best_tag = None, None
+    for tag in candidate_tags:
+        if tag not in us_gaap:
+            continue
+        try:
+            fact = most_recent_annual_duration_fact(us_gaap, tag)
+        except ValueError:
+            continue  # tag exists but has no form=10-K, fp=FY facts
+        if best_fact is None or fact["end"] > best_fact["end"]:
+            best_fact, best_tag = fact, tag
+    return best_fact, best_tag
+
+
 def annual_duration_fact_at(us_gaap, tag, fiscal_year_end, required=True):
     """form=10-K, fp=FY fact for a duration (income statement) concept whose
     period ends exactly on fiscal_year_end."""
@@ -190,11 +231,7 @@ def compute_margins(ticker, us_gaap, fiscal_year_end=None):
 
     revenue_fact, revenue_tag = None, None
     if fiscal_year_end is None:
-        for tag in REVENUE_TAGS:
-            if tag in us_gaap:
-                revenue_fact = most_recent_annual_duration_fact(us_gaap, tag)
-                revenue_tag = tag
-                break
+        revenue_fact, revenue_tag = most_recent_fact_among_candidates(us_gaap, REVENUE_TAGS)
         if revenue_fact is None:
             raise RuntimeError(f"No revenue tag found (tried: {', '.join(REVENUE_TAGS)})")
     else:

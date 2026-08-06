@@ -5,28 +5,36 @@ reporting, and run it on companies this tool has never seen before.
 
 Pipeline: resolve_ticker.resolve_ticker() (CIK + confirmed 10-K,
 unchanged from that slice) -> fetch companyfacts for that CIK ->
-fetch_margins.compute_margins() (unchanged calculation, run for gross
-margin only — operating margin comes along for free since
-compute_margins computes both, but only gross margin is reported here,
-per this slice's scope). No other metric is wired in.
+fetch_margins.compute_margins() (run for gross margin only — operating
+margin comes along for free since compute_margins computes both, but
+only gross margin is reported here, per this slice's scope). No other
+metric is wired in.
 
-Confidence for gross margin specifically: compute_margins() currently
-has no derived/fallback path for revenue or cost-of-revenue resolution
-(each is either found directly under one of a short list of candidate
-tags, or the call raises and gross margin is unresolved) — so, exactly
-as already established in fetch_trajectory.py's own per-metric
-confidence assignment, gross margin's confidence is "clean" whenever
-the call succeeds and "unresolved" whenever it doesn't. This is not
-guessed here; it's read off whether the existing tag-resolution logic
-found a match, using the same tag candidate lists already validated on
-the four known companies (VRT, ETN, PWR, NVT) — unchanged, not
-expanded for these new companies, since the entire point of this test
-is to see whether that logic generalizes as-is.
+This script previously found a real bug on NVDA: compute_margins()'s
+"most recent" resolution picked whichever candidate revenue tag merely
+existed anywhere in the filer's history, not whichever one actually had
+the most recent data, and silently reported FY2022 figures as "clean."
+Fixed in fetch_margins.most_recent_fact_among_candidates() (compares
+every candidate's own most-recent fact and picks the genuinely most
+recent one) and fetch_roic_others.compute_roic() (same helper, applied
+to its own "most recent" anchor tag), which fetch_credit_metrics.py
+inherits automatically since it delegates its own "most recent"
+resolution to compute_margins.
 
-Standalone — does not modify or import fetch_roic_others.py,
-fetch_customer_concentration.py, fetch_credit_metrics.py,
-fetch_trajectory.py, fetch_verdict.py, or consolidate.py, and does not
-touch the existing four-company TICKERS list in fetch_margins.py.
+Confidence, redefined after that fix: gross margin is only reported
+"clean" if (a) compute_margins() succeeded, AND (b) the fiscal year it
+resolved to matches resolve_ticker()'s independently-found most recent
+10-K fiscal year end — a cross-check against the filer's submissions
+index, not against XBRL tag data, so it can't share the same blind spot
+a tag-based bug could have. A mismatch (data found, but for an older
+year than the filing's actual most recent one) is reported "STALE," not
+"clean," even though a tag DID match. A compute_margins() failure is
+"UNRESOLVED." Nothing here guesses a number for either case.
+
+Standalone — does not modify or import fetch_customer_concentration.py,
+fetch_credit_metrics.py, fetch_trajectory.py, fetch_verdict.py, or
+consolidate.py, and does not touch the existing four-company TICKERS
+list in fetch_margins.py or fetch_roic_others.py.
 """
 
 import fetch_margins
@@ -68,19 +76,38 @@ def gross_margin_for_ticker(ticker):
             "reason": str(e),
         }
 
-    return {
-        "status": "clean",
+    base = {
         "ticker": ticker_norm,
         "company_name": resolution["company_name"],
         "cik": cik,
         "fiscal_year": margins["fiscal_year"],
         "fiscal_year_end": margins["fiscal_year_end"],
+        "authoritative_fiscal_year_end": resolution["fiscal_year_end"],
         "revenue": margins["revenue"],
         "revenue_tag": margins["revenue_tag"],
         "cost_of_revenue": margins["cost_of_revenue"],
         "cost_of_revenue_tag": margins["cost_of_revenue_tag"],
         "gross_margin": margins["gross_margin"],
     }
+
+    # Cross-check against resolve_ticker()'s independently-found most
+    # recent 10-K fiscal year end (from the filer's submissions index,
+    # not from XBRL tag data) — a value only earns "clean" if the tag
+    # resolution actually landed on the filing's true most recent year.
+    if margins["fiscal_year_end"] != resolution["fiscal_year_end"]:
+        base["status"] = "stale"
+        base["reason"] = (
+            f"compute_margins() resolved to FY ended {margins['fiscal_year_end']} using tag "
+            f"[{margins['revenue_tag']}], but resolve_ticker() independently found this company's "
+            f"actual most recent 10-K is for FY ended {resolution['fiscal_year_end']} "
+            f"(accession {resolution['accession_number']}, filed {resolution['filing_date']}). "
+            "The gross margin figure above is real data, just not for the current year — do not "
+            "treat it as this company's latest reported gross margin."
+        )
+        return base
+
+    base["status"] = "clean"
+    return base
 
 
 def print_result(result):
@@ -99,13 +126,21 @@ def print_result(result):
         print()
         return
 
-    # status == "clean"
     print(f"Company: {result['company_name']}  (CIK {result['cik']})")
     print(f"Fiscal year: FY{result['fiscal_year']} (ended {result['fiscal_year_end']})")
     print(f"Revenue tag used:          {result['revenue_tag']}  = ${result['revenue']:,}")
     print(f"Cost-of-revenue tag used:  {result['cost_of_revenue_tag']}  = ${result['cost_of_revenue']:,}")
     print(f"Gross margin: {result['gross_margin']:.2%}")
-    print("CONFIDENCE: CLEAN — both tags matched directly, nothing derived or substituted.")
+
+    if result["status"] == "stale":
+        print("CONFIDENCE: STALE")
+        print(f"  *** {result['reason']} ***")
+    else:
+        print(
+            "CONFIDENCE: CLEAN — both tags matched directly, nothing derived or substituted, "
+            f"and the resolved fiscal year (ended {result['fiscal_year_end']}) matches "
+            f"resolve_ticker()'s independently-found most recent 10-K."
+        )
     print()
 
 

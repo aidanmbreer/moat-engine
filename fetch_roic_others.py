@@ -37,6 +37,8 @@ import time
 
 import requests
 
+import fetch_margins
+
 HEADERS = {"User-Agent": "Aidan Breer Student Research aidanmbreer@gmail.com"}
 TICKERS = ["VRT", "ETN", "PWR", "NVT"]
 MAX_CALLS = 1 + len(TICKERS)  # ticker lookup + one companyfacts call per company
@@ -289,9 +291,17 @@ def compute_roic(ticker, us_gaap, fiscal_year_end=None):
     flags = []
 
     # IncomeTaxExpenseBenefit is reported every year a 10-K is filed, so its
-    # fiscal year is a reliable reference point.
+    # fiscal year is a reliable reference point. Uses
+    # fetch_margins.most_recent_fact_among_candidates() (not the plain
+    # most_recent_annual_duration_fact()) even though there's currently
+    # only one candidate tag here — same fix applied uniformly across the
+    # shared "most recent" resolution path, so this anchor can't repeat
+    # the NVDA-style stale-tag bug if a second candidate tag is ever
+    # added here.
     if fiscal_year_end is None:
-        tax_expense_fact = most_recent_annual_duration_fact(us_gaap, "IncomeTaxExpenseBenefit")
+        tax_expense_fact, _ = fetch_margins.most_recent_fact_among_candidates(us_gaap, ["IncomeTaxExpenseBenefit"])
+        if tax_expense_fact is None:
+            raise RuntimeError("No IncomeTaxExpenseBenefit tag found")
     else:
         tax_expense_fact = annual_duration_fact_at(us_gaap, "IncomeTaxExpenseBenefit", fiscal_year_end)
     reference_fiscal_year_end = tax_expense_fact["end"]
