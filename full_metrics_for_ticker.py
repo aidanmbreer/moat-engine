@@ -96,25 +96,35 @@ def full_metrics_for_ticker(ticker):
     metrics = {}
 
     # --- gross margin + operating margin ---
+    # These resolve independently (see compute_margins docstring) — a
+    # filer that doesn't tag a single cost-of-revenue figure (e.g. ORCL)
+    # can still have operating margin resolve on its own merits.
     try:
         margins = fetch_margins.compute_margins(ticker_norm, us_gaap)
     except Exception as e:
         metrics["gross_margin"] = {"status": "unresolved", "reason": str(e)}
         metrics["operating_margin"] = {"status": "unresolved", "reason": str(e)}
     else:
-        metrics["gross_margin"] = {
-            "status": confidence_for_metric(margins["fiscal_year_end"], authoritative_fy_end, "clean"),
-            "value": margins["gross_margin"],
-            "tag": f"{margins['revenue_tag']} / {margins['cost_of_revenue_tag']}",
-            "fiscal_year_end": margins["fiscal_year_end"],
-        }
-        om_baseline = fetch_trajectory.classify_confidence([margins["flags"]])
-        metrics["operating_margin"] = {
-            "status": confidence_for_metric(margins["fiscal_year_end"], authoritative_fy_end, om_baseline),
-            "value": margins["operating_margin"],
-            "tag": "OperatingIncomeLoss" if om_baseline == "clean" else "derived (Revenue - COGS - SG&A - R&D)",
-            "fiscal_year_end": margins["fiscal_year_end"],
-        }
+        if margins["gross_margin"] is None:
+            metrics["gross_margin"] = {"status": "unresolved", "reason": margins["cost_of_revenue_error"]}
+        else:
+            metrics["gross_margin"] = {
+                "status": confidence_for_metric(margins["fiscal_year_end"], authoritative_fy_end, "clean"),
+                "value": margins["gross_margin"],
+                "tag": f"{margins['revenue_tag']} / {margins['cost_of_revenue_tag']}",
+                "fiscal_year_end": margins["fiscal_year_end"],
+            }
+
+        if margins["operating_margin"] is None:
+            metrics["operating_margin"] = {"status": "unresolved", "reason": margins["operating_income_error"]}
+        else:
+            om_baseline = fetch_trajectory.classify_confidence([margins["flags"]])
+            metrics["operating_margin"] = {
+                "status": confidence_for_metric(margins["fiscal_year_end"], authoritative_fy_end, om_baseline),
+                "value": margins["operating_margin"],
+                "tag": "OperatingIncomeLoss" if om_baseline == "clean" else "derived (Revenue - COGS - SG&A - R&D)",
+                "fiscal_year_end": margins["fiscal_year_end"],
+            }
 
     # --- ROIC ---
     try:

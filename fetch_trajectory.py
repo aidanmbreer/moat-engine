@@ -138,10 +138,22 @@ def gather_ticker_trajectory(ticker, us_gaap):
             series["operating_margin"].append((year_label, None, "unresolved"))
             print(f"[{ticker} FY{year_label}] margins UNRESOLVED: {e}\n")
         else:
-            series["gross_margin"].append((year_label, margins["gross_margin"], "clean"))
-            series["operating_margin"].append(
-                (year_label, margins["operating_margin"], classify_confidence([margins["flags"]]))
-            )
+            # Gross margin and operating margin resolve independently (see
+            # compute_margins docstring) — a missing cost-of-revenue tag must
+            # not mark operating margin unresolved too.
+            if margins["gross_margin"] is None:
+                series["gross_margin"].append((year_label, None, "unresolved"))
+                print(f"[{ticker} FY{year_label}] gross margin UNRESOLVED: {margins['cost_of_revenue_error']}\n")
+            else:
+                series["gross_margin"].append((year_label, margins["gross_margin"], "clean"))
+
+            if margins["operating_margin"] is None:
+                series["operating_margin"].append((year_label, None, "unresolved"))
+                print(f"[{ticker} FY{year_label}] operating margin UNRESOLVED: {margins['operating_income_error']}\n")
+            else:
+                series["operating_margin"].append(
+                    (year_label, margins["operating_margin"], classify_confidence([margins["flags"]]))
+                )
 
         try:
             roic = fetch_roic_others.compute_roic(ticker, us_gaap, fiscal_year_end=fy_end)

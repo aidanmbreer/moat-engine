@@ -177,6 +177,12 @@ def compute_credit_metrics(ticker, us_gaap, fiscal_year_end=None):
     margins = fetch_margins.compute_margins(ticker, us_gaap, fiscal_year_end=fiscal_year_end)
     fiscal_year_end = margins["fiscal_year_end"]
     fiscal_year = margins["fiscal_year"]
+    if margins["operating_income"] is None:
+        # Operating income is a genuine shared dependency of EBITDA (and thus
+        # all three credit metrics) — unlike gross margin, which compute_margins()
+        # now resolves independently and can fail without taking operating
+        # income down with it.
+        raise RuntimeError(f"Operating income unresolved: {margins['operating_income_error']}")
     operating_income = margins["operating_income"]
 
     da_value, da_tag, da_flags = depreciation_and_amortization(ticker, us_gaap, fiscal_year_end)

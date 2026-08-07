@@ -225,7 +225,20 @@ def compute_margins(ticker, us_gaap, fiscal_year_end=None):
     behavior, unchanged). If given an explicit period end, runs the exact
     same tag-resolution and derivation logic against that year instead —
     used for multi-year pulls. Every existing caller passes no
-    fiscal_year_end and is unaffected."""
+    fiscal_year_end and is unaffected.
+
+    Gross margin and operating margin resolve independently. Revenue is a
+    genuine shared dependency of both (gross margin's numerator and
+    operating margin's denominator both need it), so a failure to resolve
+    revenue still fails the whole function. But cost-of-revenue (gross
+    margin's other input) and operating income (operating margin's other
+    input) don't depend on each other — a filer that doesn't tag a single
+    cost-of-revenue figure at all (e.g. ORCL, which presents no
+    gross-profit subtotal on its income statement) can still have a
+    natively-tagged OperatingIncomeLoss, and operating margin must resolve
+    on that basis rather than being dragged down as collateral damage from
+    the missing cost-of-revenue tag.
+    """
     print(f"=== {ticker} ===")
     flags = []
 
@@ -249,7 +262,9 @@ def compute_margins(ticker, us_gaap, fiscal_year_end=None):
     fiscal_year = revenue_fact["fy"]
     revenue = revenue_fact["val"]
 
+    # --- Cost of revenue / gross margin (independent of operating margin) ---
     cost_of_revenue_tag, cost_of_revenue_val = None, None
+    cost_of_revenue_error = None
     for tag in COST_OF_REVENUE_TAG_CANDIDATES:
         fact = annual_duration_fact_at(us_gaap, tag, fiscal_year_end, required=False)
         if fact is not None:
@@ -258,15 +273,21 @@ def compute_margins(ticker, us_gaap, fiscal_year_end=None):
     if cost_of_revenue_tag is None:
         candidates = tags_at_date(us_gaap, fiscal_year_end, "Cost")
         candidate_lines = "\n".join(f"    {tag}: ${val:,}" for tag, val in sorted(candidates.items()))
-        raise RuntimeError(
+        cost_of_revenue_error = (
             f"No cost-of-revenue tag found (tried: {', '.join(COST_OF_REVENUE_TAG_CANDIDATES)}). "
             f"'Cost'-containing tags available as of {fiscal_year_end}:\n{candidate_lines}"
         )
 
-    gross_profit = revenue - cost_of_revenue_val
-    gross_margin = gross_profit / revenue
+    if cost_of_revenue_error is None:
+        gross_profit = revenue - cost_of_revenue_val
+        gross_margin = gross_profit / revenue
+    else:
+        gross_profit = None
+        gross_margin = None
 
+    # --- Operating income / operating margin (independent of gross margin) ---
     operating_income_fact = annual_duration_fact_at(us_gaap, "OperatingIncomeLoss", fiscal_year_end, required=False)
+    operating_income_error = None
     if operating_income_fact is not None:
         operating_income = operating_income_fact["val"]
     else:
@@ -276,23 +297,37 @@ def compute_margins(ticker, us_gaap, fiscal_year_end=None):
             candidates.update(tags_at_date(us_gaap, fiscal_year_end, "Cost"))
             candidates.update(tags_at_date(us_gaap, fiscal_year_end, "Expense"))
             candidate_lines = "\n".join(f"    {tag}: ${val:,}" for tag, val in sorted(candidates.items()))
-            raise RuntimeError(
+            operating_income = None
+            operating_income_error = (
                 f"OperatingIncomeLoss not tagged for FY ended {fiscal_year_end}, and the "
                 f"Revenue - COGS - SG&A - R&D proxy tags are also incomplete. "
                 f"Revenue/cost/expense tags available as of {fiscal_year_end} for hand-reconstruction:\n{candidate_lines}"
             )
-        operating_income = proxy_value
-        flags.append("Operating income derived via Revenue - COGS - SG&A - R&D proxy, not a tagged OperatingIncomeLoss — see derivation above.")
+        else:
+            operating_income = proxy_value
+            flags.append("Operating income derived via Revenue - COGS - SG&A - R&D proxy, not a tagged OperatingIncomeLoss — see derivation above.")
 
-    operating_margin = operating_income / revenue
+    if operating_income_error is None:
+        operating_margin = operating_income / revenue
+    else:
+        operating_margin = None
 
     print(f"Fiscal year: FY{fiscal_year} (ended {fiscal_year_end})")
     print(f"Revenue [{revenue_tag}]: ${revenue:,}")
-    print(f"Cost of revenue [{cost_of_revenue_tag}]: ${cost_of_revenue_val:,}")
-    print(f"Gross profit: ${gross_profit:,}")
-    print(f"Gross margin: {gross_margin:.2%}")
-    print(f"Operating income: ${operating_income:,}")
-    print(f"Operating margin: {operating_margin:.2%}")
+    if cost_of_revenue_error is None:
+        print(f"Cost of revenue [{cost_of_revenue_tag}]: ${cost_of_revenue_val:,}")
+        print(f"Gross profit: ${gross_profit:,}")
+        print(f"Gross margin: {gross_margin:.2%}")
+    else:
+        print(f"Cost of revenue: UNRESOLVED — {cost_of_revenue_error}")
+        print("Gross profit: UNRESOLVED")
+        print("Gross margin: UNRESOLVED")
+    if operating_income_error is None:
+        print(f"Operating income: ${operating_income:,}")
+        print(f"Operating margin: {operating_margin:.2%}")
+    else:
+        print(f"Operating income: UNRESOLVED — {operating_income_error}")
+        print("Operating margin: UNRESOLVED")
     for flag in flags:
         print(f"FLAG: {flag}")
     print()
@@ -305,9 +340,11 @@ def compute_margins(ticker, us_gaap, fiscal_year_end=None):
         "revenue_tag": revenue_tag,
         "cost_of_revenue": cost_of_revenue_val,
         "cost_of_revenue_tag": cost_of_revenue_tag,
+        "cost_of_revenue_error": cost_of_revenue_error,
         "gross_profit": gross_profit,
         "gross_margin": gross_margin,
         "operating_income": operating_income,
+        "operating_income_error": operating_income_error,
         "operating_margin": operating_margin,
         "flags": flags,
     }
