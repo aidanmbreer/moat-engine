@@ -129,10 +129,24 @@ def tags_at_date(us_gaap, fiscal_year_end, keyword, period="instant"):
 
 # Current-portion-of-debt tags, tried in order. None of these bundle
 # noncurrent finance leases, so no double-counting risk on this side.
+# The last candidate is a maturities-schedule disclosure tag, not a
+# balance-sheet current-liabilities tag — added for filers (CAT) that
+# don't tag a consolidated current-debt figure at all, only a
+# segment-dimensioned one invisible to companyfacts. Its note is
+# carried alongside the tag so callers can flag the substitution
+# rather than reporting it as a plain clean match.
 CURRENT_DEBT_TAG_CANDIDATES = [
-    "LongTermDebtCurrent",
-    "DebtCurrent",
-    "LongTermDebtAndCapitalLeaseObligationsCurrent",
+    ("LongTermDebtCurrent", None),
+    ("DebtCurrent", None),
+    ("LongTermDebtAndCapitalLeaseObligationsCurrent", None),
+    (
+        "LongTermDebtMaturitiesRepaymentsOfPrincipalInNextTwelveMonths",
+        "MATURITIES_SCHEDULE: current debt uses LongTermDebtMaturitiesRepaymentsOfPrincipalInNextTwelveMonths "
+        "instead of a balance-sheet current-liabilities tag — this filer doesn't tag a consolidated current-debt "
+        "figure at all, only a segment-dimensioned one invisible to this pipeline. Sourced from the debt-footnote "
+        "12-month maturities schedule, not the balance sheet's current-liabilities classification; the two can "
+        "diverge under covenant-triggered reclassification of otherwise long-term debt to current.",
+    ),
 ]
 
 # Noncurrent long-term debt tags, tried in order. The second candidate is
@@ -145,6 +159,17 @@ NONCURRENT_DEBT_TAG_CANDIDATES = [
     ("LongTermDebtAndCapitalLeaseObligations", True),
 ]
 
+# Pre-tax income ("income before taxes") tags, tried in order. The second
+# candidate is a legacy XBRL element name some filers (CAT) still use for
+# the same concept — verified economically equivalent via the accounting
+# identity pretax - tax + equity-method income = net income (ProfitLoss),
+# not just a similarly-named tag, so no confidence flag on this
+# substitution, exactly like the noncurrent-debt candidates above.
+PRETAX_INCOME_TAG_CANDIDATES = [
+    "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+    "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+]
+
 
 def total_debt_for_roic(us_gaap, fiscal_year_end):
     """Total debt for the ROIC calculation, targeting the economic concept
@@ -153,15 +178,17 @@ def total_debt_for_roic(us_gaap, fiscal_year_end):
     component facts plus the summed total so each input can be checked
     against the balance sheet.
     """
-    current_debt_tag, current_debt_val = None, None
-    for tag in CURRENT_DEBT_TAG_CANDIDATES:
+    current_debt_tag, current_debt_val, current_debt_note = None, None, None
+    for tag, note in CURRENT_DEBT_TAG_CANDIDATES:
         fact = annual_instant_fact(us_gaap, tag, fiscal_year_end, required=False)
         if fact is not None:
-            current_debt_tag, current_debt_val = tag, fact["val"]
+            current_debt_tag, current_debt_val, current_debt_note = tag, fact["val"], note
             break
     if current_debt_tag is None:
         raise RuntimeError(
-            "No current-portion-of-debt tag found (tried: " + ", ".join(CURRENT_DEBT_TAG_CANDIDATES) + ")"
+            "No current-portion-of-debt tag found (tried: "
+            + ", ".join(tag for tag, _ in CURRENT_DEBT_TAG_CANDIDATES)
+            + ")"
         )
 
     noncurrent_debt_tag, noncurrent_debt_val, bundles_finance_lease = None, None, False
@@ -193,6 +220,7 @@ def total_debt_for_roic(us_gaap, fiscal_year_end):
     return {
         "current_debt_tag": current_debt_tag,
         "current_debt": current_debt_val,
+        "current_debt_note": current_debt_note,
         "noncurrent_debt_tag": noncurrent_debt_tag,
         "noncurrent_debt": noncurrent_debt_val,
         "operating_lease_liability_noncurrent": operating_lease_liability_val,
@@ -334,11 +362,18 @@ def compute_roic(ticker, us_gaap, fiscal_year_end=None):
     # fiscal_year_end is a concrete date by this point regardless of what the
     # function's fiscal_year_end argument was, so this always targets the
     # exact period already settled on above.
-    pretax_income_fact = annual_duration_fact_at(
-        us_gaap,
-        "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
-        fiscal_year_end,
-    )
+    pretax_income_fact, pretax_income_tag = None, None
+    for tag in PRETAX_INCOME_TAG_CANDIDATES:
+        pretax_income_fact = annual_duration_fact_at(us_gaap, tag, fiscal_year_end, required=False)
+        if pretax_income_fact is not None:
+            pretax_income_tag = tag
+            break
+    if pretax_income_fact is None:
+        raise RuntimeError(
+            f"No pre-tax income tag found for FY ended {fiscal_year_end} (tried: "
+            + ", ".join(PRETAX_INCOME_TAG_CANDIDATES)
+            + ")"
+        )
 
     try:
         debt = total_debt_for_roic(us_gaap, fiscal_year_end)
@@ -353,6 +388,8 @@ def compute_roic(ticker, us_gaap, fiscal_year_end=None):
     for component in ("current_debt", "noncurrent_debt", "operating_lease_liability_noncurrent", "finance_lease_liability_noncurrent"):
         if debt[component] == 0:
             flags.append(f"{component} is $0 as of {fiscal_year_end} — hand-check the balance sheet.")
+    if debt.get("current_debt_note"):
+        flags.append(debt["current_debt_note"])
 
     equity_fact = annual_instant_fact(us_gaap, "StockholdersEquity", fiscal_year_end, required=False)
     if equity_fact is None:
@@ -414,6 +451,7 @@ def compute_roic(ticker, us_gaap, fiscal_year_end=None):
         "fiscal_year_end": fiscal_year_end,
         "operating_income": operating_income,
         "effective_tax_rate": effective_tax_rate,
+        "pretax_income_tag": pretax_income_tag,
         "nopat": nopat,
         "total_debt": total_debt,
         "total_equity": total_equity,

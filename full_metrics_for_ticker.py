@@ -145,27 +145,29 @@ def full_metrics_for_ticker(ticker):
         if credit["leverage"] is None:
             metrics["debt_ebitda"] = {"status": "unresolved", "reason": credit["leverage_error"]}
         else:
-            de_baseline = fetch_trajectory.classify_confidence([credit["margins_flags"], credit["da_flags"]])
+            de_baseline = fetch_trajectory.classify_confidence(
+                [credit["margins_flags"], credit["da_flags"], credit["debt_flags"]]
+            )
             metrics["debt_ebitda"] = {
                 "status": confidence_for_metric(credit["fiscal_year_end"], authoritative_fy_end, de_baseline),
                 "value": credit["leverage"],
                 "tag": f"total debt (see trace) / D&A[{credit['da_tag']}]",
                 "fiscal_year_end": credit["fiscal_year_end"],
-                "flags": credit["margins_flags"] + credit["da_flags"],
+                "flags": credit["margins_flags"] + credit["da_flags"] + credit["debt_flags"],
             }
 
         if credit["net_leverage"] is None:
             metrics["net_debt_ebitda"] = {"status": "unresolved", "reason": credit["net_leverage_error"]}
         else:
             nde_baseline = fetch_trajectory.classify_confidence(
-                [credit["margins_flags"], credit["da_flags"], credit["cash_flags"]]
+                [credit["margins_flags"], credit["da_flags"], credit["cash_flags"], credit["debt_flags"]]
             )
             metrics["net_debt_ebitda"] = {
                 "status": confidence_for_metric(credit["fiscal_year_end"], authoritative_fy_end, nde_baseline),
                 "value": credit["net_leverage"],
                 "tag": "total debt / cash (see trace) / D&A[{}]".format(credit["da_tag"]),
                 "fiscal_year_end": credit["fiscal_year_end"],
-                "flags": credit["margins_flags"] + credit["da_flags"] + credit["cash_flags"],
+                "flags": credit["margins_flags"] + credit["da_flags"] + credit["cash_flags"] + credit["debt_flags"],
             }
 
         if credit["interest_coverage"] is None:

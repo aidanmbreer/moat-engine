@@ -20,7 +20,20 @@ Definitions:
   debt = total debt - cash. Cash uses the same tag preference already
   validated in fetch_roic_others.compute_roic() (not a new fallback
   order, just applied here since compute_roic() doesn't expose cash
-  lookup as its own function).
+  lookup as its own function). CAT (added after VRT/ETN/PWR/NVT) has
+  two CAT-specific debt notes carried in "debt_flags": (1) CAT doesn't
+  tag a consolidated current-debt figure at all — only a
+  segment-dimensioned one invisible to companyfacts — so its current
+  debt falls back to the debt-footnote maturities-schedule tag
+  (see fetch_roic_others.CURRENT_DEBT_TAG_CANDIDATES), flagged
+  MATURITIES_SCHEDULE rather than reported clean; (2) CAT's total debt
+  is consolidated (industrial parent + Cat Financial combined), same
+  as the other companies' methodology, but ~85-90% of that consolidated
+  debt is Cat Financial's — flagged as CAT_FINANCIAL_CONCENTRATION.
+  CAT's ShortTermBorrowings (Cat Financial commercial paper funding the
+  lending book, not industrial debt) is intentionally excluded from
+  total debt for consistency with the other four companies, which have
+  no such line either — also flagged where it applies.
 - Interest expense: preferred tag is InterestExpense; several filers
   don't tag that for FY2025 (it went stale after an earlier year), so
   InterestExpenseNonoperating is tried next. nVent doesn't tag either
@@ -172,9 +185,31 @@ def compute_credit_metrics(ticker, us_gaap, fiscal_year_end=None):
     debt = None
     total_debt = None
     debt_error = None
+    debt_flags = []
     try:
         debt = fetch_roic_others.total_debt_for_roic(us_gaap, fiscal_year_end)
         total_debt = debt["total"]
+        if debt.get("current_debt_note"):
+            debt_flags.append(debt["current_debt_note"])
+        if ticker == "CAT":
+            debt_flags.append(
+                "CAT_FINANCIAL_CONCENTRATION: ~85-90% of CAT's consolidated debt sits in Cat Financial (the "
+                "captive finance subsidiary), not the industrial Machinery, Energy & Transportation business. "
+                "Debt is reported consolidated (parent + Cat Financial combined) for consistency with how the "
+                "four known companies are computed; leverage here reflects a captive lender's balance sheet "
+                "funding its lending/leasing book and is not directly comparable to a pure industrial's "
+                "leverage."
+            )
+            short_term_borrowings = fetch_roic_others.annual_instant_fact(
+                us_gaap, "ShortTermBorrowings", fiscal_year_end, required=False
+            )
+            stb_str = f"${short_term_borrowings['val']:,}" if short_term_borrowings else "an unresolved amount"
+            debt_flags.append(
+                f"CAT's ShortTermBorrowings ({stb_str} as of {fiscal_year_end}) is intentionally excluded from "
+                "this total debt figure — it is Cat Financial commercial paper funding the lending book, not "
+                "industrial debt, and none of the four known companies' methodology includes a short-term-"
+                "borrowings line either."
+            )
     except RuntimeError as e:
         debt_error = str(e)
 
@@ -197,10 +232,14 @@ def compute_credit_metrics(ticker, us_gaap, fiscal_year_end=None):
         interest_error = str(e)
 
     # Top-level "flags" preserves the original ordering (cash, then D&A,
-    # then interest) regardless of the try/except structure above.
+    # then interest) regardless of the try/except structure above. debt_flags
+    # is appended last — it's empty for the four known companies (and any
+    # filer that isn't CAT and doesn't need the maturities-schedule
+    # fallback), so this is a no-op for their output.
     flags.extend(cash_flags)
     flags.extend(da_flags)
     flags.extend(interest_flags)
+    flags.extend(debt_flags)
 
     if debt_error is None:
         leverage = total_debt / ebitda
@@ -297,6 +336,7 @@ def compute_credit_metrics(ticker, us_gaap, fiscal_year_end=None):
         "da_flags": da_flags,
         "interest_flags": interest_flags,
         "cash_flags": cash_flags,
+        "debt_flags": debt_flags,
     }
 
 

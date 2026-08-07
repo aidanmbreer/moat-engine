@@ -167,7 +167,9 @@ def gather_ticker_trajectory(ticker, us_gaap):
                 series["debt_ebitda"].append((year_label, None, "unresolved"))
                 print(f"[{ticker} FY{year_label}] debt/EBITDA UNRESOLVED: {credit['leverage_error']}\n")
             else:
-                debt_ebitda_conf = classify_confidence([credit["margins_flags"], credit["da_flags"]])
+                debt_ebitda_conf = classify_confidence(
+                    [credit["margins_flags"], credit["da_flags"], credit["debt_flags"]]
+                )
                 series["debt_ebitda"].append((year_label, credit["leverage"], debt_ebitda_conf))
 
             if credit["net_leverage"] is None:
@@ -175,7 +177,7 @@ def gather_ticker_trajectory(ticker, us_gaap):
                 print(f"[{ticker} FY{year_label}] net debt/EBITDA UNRESOLVED: {credit['net_leverage_error']}\n")
             else:
                 net_debt_ebitda_conf = classify_confidence(
-                    [credit["margins_flags"], credit["da_flags"], credit["cash_flags"]]
+                    [credit["margins_flags"], credit["da_flags"], credit["cash_flags"], credit["debt_flags"]]
                 )
                 series["net_debt_ebitda"].append((year_label, credit["net_leverage"], net_debt_ebitda_conf))
 
