@@ -201,6 +201,11 @@ def full_metrics_for_ticker(ticker):
         "cik": cik,
         "authoritative_fiscal_year_end": authoritative_fy_end,
         "metrics": metrics,
+        # Exposed so callers (analyze.py) can reuse this same already-fetched
+        # companyfacts response for further computation (e.g. the 5-year
+        # trajectory) without a second network fetch. Purely additive — no
+        # existing key changed, no existing caller reads this.
+        "us_gaap": us_gaap,
     }
 
 

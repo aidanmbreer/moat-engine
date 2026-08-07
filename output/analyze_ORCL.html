@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ORCL — Analysis</title>
+<style>
+  body { font-family: -apple-system, Segoe UI, Helvetica, Arial, sans-serif; margin: 2rem; color: #1a1a1a; background: #fff; }
+  h1 { font-size: 1.4rem; margin-bottom: 0.1rem; }
+  h2 { font-size: 1.05rem; margin-top: 2rem; margin-bottom: 0.6rem; border-bottom: 2px solid #1f4e78; padding-bottom: 0.2rem; }
+  .subtitle { color: #555; margin-bottom: 1.5rem; font-size: 0.9rem; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.88rem; margin-bottom: 1rem; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: right; }
+  th { background: #1f4e78; color: #fff; text-align: center; }
+  td:first-child, th:first-child { text-align: left; font-weight: 600; }
+  tr:nth-child(even) td { background: #f7f9fb; }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 0.78rem; font-weight: 600; color: #fff; }
+  .flags { text-align: left; font-size: 0.78rem; color: #555; margin-top: 2px; }
+  .verdict-box { background: #f2f6fa; border: 1px solid #ccd9e6; border-radius: 6px; padding: 1rem 1.2rem; }
+  .verdict-line { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.6rem; }
+  .signal { margin-bottom: 0.5rem; }
+  .signal .label { font-weight: 600; }
+  .caveats { margin-top: 0.8rem; font-size: 0.85rem; color: #7a4a00; }
+  .caveats li { margin-bottom: 0.3rem; }
+  .peer-note { font-size: 0.85rem; color: #666; margin-bottom: 0.8rem; }
+  .footnote { margin-top: 2rem; font-size: 0.8rem; color: #666; max-width: 800px; }
+</style>
+</head>
+<body>
+<h1>ORACLE CORP (ORCL)</h1>
+<div class="subtitle">CIK 0001341439 — most recent fiscal year end 2026-05-31 — <a href="https://www.sec.gov/Archives/edgar/data/1341439/000119312526277521/orcl-20260531.htm">source 10-K</a></div>
+
+<h2>Current-Year Metrics</h2>
+<table>
+<thead><tr><th>Metric</th><th>Value</th><th>Confidence</th><th>Tag / Method</th></tr></thead>
+<tbody>
+<tr><td>Gross Margin</td><td>—</td><td><span class="badge" style="background:#999999">UNRESOLVED</span></td><td class="flags">No cost-of-revenue tag found (tried: CostOfRevenue, CostOfGoodsAndServicesSold). &#x27;Cost&#x27;-containing tags available as of 2026-05-31:
+    CostsAndExpenses: $46,751,000,000
+    DebtInstrumentUnamortizedDiscountPremiumAndDebtIssuanceCostsNet: $564,000,000
+    DefinedContributionPlanCostRecognized: $478,000,000
+    EffectiveIncomeTaxRateReconciliationNondeductibleExpenseShareBasedCompensationCost: $-0.106
+    EmployeeServiceShareBasedCompensationNonvestedAwardsTotalCompensationCostNotYetRecognizedShareBasedAwardsOtherThanOptions: $8,900,000,000
+    IncomeTaxReconciliationNondeductibleExpenseShareBasedCompensationCost: $-2,062,000,000
+    OperatingLeaseCost: $2,794,000,000</td></tr>
+<tr><td>Operating Margin</td><td>30.59%</td><td><span class="badge" style="background:#0a6b0a">CLEAN</span></td><td>OperatingIncomeLoss</td></tr>
+<tr><td>ROIC</td><td>10.32%</td><td><span class="badge" style="background:#8a6d00">DERIVED</span></td><td>NOPAT / invested capital (operating income, tax, debt, equity, cash tags — see flags/trace above)<div class='flags'>No consolidated pre-tax income tag found; pre-tax income derived as IncomeLossFromContinuingOperationsBeforeIncomeTaxesDomestic ($8,693,000,000) + IncomeLossFromContinuingOperationsBeforeIncomeTaxesForeign ($10,861,000,000) = $19,554,000,000 — see derivation above.</div></td></tr>
+<tr><td>Debt / EBITDA</td><td>5.46x</td><td><span class="badge" style="background:#8a6d00">DERIVED</span></td><td>total debt (see trace) / D&amp;A[Depreciation + AmortizationOfIntangibleAssets (derived)]<div class='flags'>No combined DepreciationDepletionAndAmortization tag; D&amp;A derived as Depreciation ($7,623,000,000) + AmortizationOfIntangibleAssets ($1,671,000,000) = $9,294,000,000. Excludes finance-lease right-of-use asset amortization if separately tagged — hand-check against the cash flow statement.</div></td></tr>
+<tr><td>Net Debt / EBITDA</td><td>4.41x</td><td><span class="badge" style="background:#8a6d00">DERIVED</span></td><td>total debt / cash (see trace) / D&amp;A[Depreciation + AmortizationOfIntangibleAssets (derived)]<div class='flags'>No combined DepreciationDepletionAndAmortization tag; D&amp;A derived as Depreciation ($7,623,000,000) + AmortizationOfIntangibleAssets ($1,671,000,000) = $9,294,000,000. Excludes finance-lease right-of-use asset amortization if separately tagged — hand-check against the cash flow statement.</div></td></tr>
+<tr><td>Interest Coverage (EBITDA / Interest)</td><td>6.50x</td><td><span class="badge" style="background:#8a6d00">DERIVED</span></td><td>Interest[InterestExpense] / D&amp;A[Depreciation + AmortizationOfIntangibleAssets (derived)]<div class='flags'>No combined DepreciationDepletionAndAmortization tag; D&amp;A derived as Depreciation ($7,623,000,000) + AmortizationOfIntangibleAssets ($1,671,000,000) = $9,294,000,000. Excludes finance-lease right-of-use asset amortization if separately tagged — hand-check against the cash flow statement.</div></td></tr>
+</tbody>
+</table>
+
+<h2>5-Year Trajectory</h2>
+<table>
+<thead><tr><th>Metric</th><th>FY2022</th><th>FY2023</th><th>FY2024</th><th>FY2025</th><th>FY2026</th><th>Direction</th></tr></thead>
+<tbody>
+<tr><td>Gross Margin</td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>insufficient data</td></tr>
+<tr><td>Operating Margin</td><td>25.74%<div class="flags">[clean]</div></td><td>26.21%<div class="flags">[clean]</div></td><td>28.99%<div class="flags">[clean]</div></td><td>30.80%<div class="flags">[clean]</div></td><td>30.59%<div class="flags">[clean]</div></td><td>rising</td></tr>
+<tr><td>ROIC</td><td>18.76%<div class="flags">[derived]</div></td><td>14.22%<div class="flags">[derived]</div></td><td>14.97%<div class="flags">[derived]</div></td><td>13.34%<div class="flags">[derived]</div></td><td>10.32%<div class="flags">[derived]</div></td><td>falling</td></tr>
+<tr><td>Debt / EBITDA</td><td>5.61x<div class="flags">[derived]</div></td><td>4.92x<div class="flags">[derived]</div></td><td>4.34x<div class="flags">[derived]</div></td><td>4.48x<div class="flags">[derived]</div></td><td>5.46x<div class="flags">[derived]</div></td><td>falling</td></tr>
+<tr><td>Net Debt / EBITDA</td><td>4.08x<div class="flags">[derived]</div></td><td>4.41x<div class="flags">[derived]</div></td><td>3.85x<div class="flags">[derived]</div></td><td>4.03x<div class="flags">[derived]</div></td><td>4.41x<div class="flags">[derived]</div></td><td>rising</td></tr>
+<tr><td>Interest Coverage (EBITDA / Interest)</td><td>5.10x<div class="flags">[derived]</div></td><td>5.48x<div class="flags">[derived]</div></td><td>6.12x<div class="flags">[derived]</div></td><td>6.67x<div class="flags">[derived]</div></td><td>6.50x<div class="flags">[derived]</div></td><td>rising</td></tr>
+</tbody>
+</table>
+
+<h2>Verdict</h2>
+<div class="peer-note">Benchmarked against this tool's peer group (VRT, ETN, PWR, NVT) — ORCL is outside that four-company coverage set, so treat the margin-spread signal below as directional only, not an apples-to-apples industry comparison.</div>
+<div class="verdict-box">
+<div class="verdict-line">Mixed moat, durable margin, leverage easing, coverage improving.</div>
+<div class="signal"><span class="label">Moat direction:</span> MIXED (ROIC falling, gross-margin spread insufficient data, operating-margin spread flat) <span style="color:#7a4a00;font-size:0.85rem;">(ROIC is derived (formula-based, not a single tagged subtotal) in every year shown — mechanically consistent, not itself a red flag.)</span></div>
+<div class="signal"><span class="label">Margin quality / durability:</span> DURABLE — Operating margin 30.59% is high and no customer exceeds 10% — no single-customer concentration risk disclosed.</div>
+<div class="signal"><span class="label">Credit direction:</span> leverage easing, coverage improving <span style="color:#7a4a00;font-size:0.85rem;">(Debt/EBITDA is derived (formula-based, not a single tagged subtotal) in every year shown — mechanically consistent, not itself a red flag.)</span></div>
+
+</div>
+
+<div class="footnote">
+Every number above is computed by the existing, already-validated modules (fetch_margins.py, fetch_roic_others.py,
+fetch_credit_metrics.py, fetch_trajectory.py, fetch_verdict.py) — analyze.py only resolves the ticker, calls them,
+and assembles this one report; no metric is recomputed here.
+</div>
+</body>
+</html>

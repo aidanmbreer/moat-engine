@@ -261,6 +261,32 @@ def print_company_verdict(ticker, all_series, gross_spread, op_spread, sentences
             print(f"    - {c}")
     print()
 
+    # Returned in addition to the printing above (which is unchanged) so
+    # callers that need the computed values directly — e.g. analyze.py's
+    # HTML report — don't have to re-derive them or scrape stdout.
+    return {
+        "moat_direction": moat,
+        "roic_direction": roic_dir,
+        "gross_margin_spread_direction": gross_dir,
+        "operating_margin_spread_direction": op_dir,
+        "roic_confidence_note": roic_note,
+        "durability_label": label,
+        "durability_explanation": explanation,
+        "current_margin_fiscal_year": current_margin_yr,
+        "current_margin_value": current_margin_val,
+        "current_margin_confidence": current_margin_conf,
+        "concentration_status": conc_status,
+        "concentration_detail": conc_detail,
+        "leverage_label": leverage_label,
+        "coverage_label": coverage_label,
+        "leverage_direction": leverage_dir,
+        "coverage_direction": coverage_dir,
+        "leverage_confidence_note": leverage_note,
+        "coverage_confidence_note": coverage_note,
+        "verdict_line": verdict_line.capitalize(),
+        "caveats": caveats,
+    }
+
 
 def main():
     tickers_json = fetch_margins.sec_get("https://www.sec.gov/files/company_tickers.json").json()
