@@ -153,10 +153,16 @@ CURRENT_DEBT_TAG_CANDIDATES = [
 # a combined "debt and capital(finance) lease obligations" figure used by
 # filers (e.g. Eaton, Quanta) that no longer break out a pure long-term
 # debt subtotal — when it's the one that matches, noncurrent finance
-# leases are already inside it.
+# leases are already inside it. The third candidate (ORCL) is a
+# "notes payable" tag family instead of "long-term debt" — verified
+# economically equivalent via DebtCurrent + LongTermNotesPayable matching
+# DebtLongtermAndShorttermCombinedAmount exactly (same concept, different
+# tag name, not bundled with finance leases), so no confidence flag on
+# this substitution, same character as CAT's pretax fallback below.
 NONCURRENT_DEBT_TAG_CANDIDATES = [
     ("LongTermDebtNoncurrent", False),
     ("LongTermDebtAndCapitalLeaseObligations", True),
+    ("LongTermNotesPayable", False),
 ]
 
 # Pre-tax income ("income before taxes") tags, tried in order. The second
@@ -362,17 +368,43 @@ def compute_roic(ticker, us_gaap, fiscal_year_end=None):
     # fiscal_year_end is a concrete date by this point regardless of what the
     # function's fiscal_year_end argument was, so this always targets the
     # exact period already settled on above.
-    pretax_income_fact, pretax_income_tag = None, None
+    pretax_income, pretax_income_tag = None, None
     for tag in PRETAX_INCOME_TAG_CANDIDATES:
-        pretax_income_fact = annual_duration_fact_at(us_gaap, tag, fiscal_year_end, required=False)
-        if pretax_income_fact is not None:
-            pretax_income_tag = tag
+        fact = annual_duration_fact_at(us_gaap, tag, fiscal_year_end, required=False)
+        if fact is not None:
+            pretax_income, pretax_income_tag = fact["val"], tag
             break
-    if pretax_income_fact is None:
+
+    if pretax_income is None:
+        # ORCL doesn't tag a consolidated pre-tax income figure at all —
+        # only a domestic/foreign geographic split. Verified equivalent via
+        # the accounting identity (domestic + foreign - tax expense = net
+        # income), but it's a derived sum of two tags, not a substitute
+        # tag, so it's flagged "derived" rather than reported clean.
+        domestic_fact = annual_duration_fact_at(
+            us_gaap, "IncomeLossFromContinuingOperationsBeforeIncomeTaxesDomestic", fiscal_year_end, required=False
+        )
+        foreign_fact = annual_duration_fact_at(
+            us_gaap, "IncomeLossFromContinuingOperationsBeforeIncomeTaxesForeign", fiscal_year_end, required=False
+        )
+        if domestic_fact is not None and foreign_fact is not None:
+            pretax_income = domestic_fact["val"] + foreign_fact["val"]
+            pretax_income_tag = (
+                "IncomeLossFromContinuingOperationsBeforeIncomeTaxesDomestic + "
+                "IncomeLossFromContinuingOperationsBeforeIncomeTaxesForeign (derived)"
+            )
+            flags.append(
+                "No consolidated pre-tax income tag found; pre-tax income derived as "
+                f"IncomeLossFromContinuingOperationsBeforeIncomeTaxesDomestic (${domestic_fact['val']:,}) + "
+                f"IncomeLossFromContinuingOperationsBeforeIncomeTaxesForeign (${foreign_fact['val']:,}) "
+                f"= ${pretax_income:,} — see derivation above."
+            )
+
+    if pretax_income is None:
         raise RuntimeError(
             f"No pre-tax income tag found for FY ended {fiscal_year_end} (tried: "
             + ", ".join(PRETAX_INCOME_TAG_CANDIDATES)
-            + ")"
+            + ", and the Domestic+Foreign derivation)"
         )
 
     try:
@@ -409,7 +441,6 @@ def compute_roic(ticker, us_gaap, fiscal_year_end=None):
             "CashAndCashEquivalentsAtCarryingValue tag not reported; used CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents instead, which may include a small restricted-cash component — hand-check against the balance sheet."
         )
 
-    pretax_income = pretax_income_fact["val"]
     tax_expense = tax_expense_fact["val"]
     effective_tax_rate = tax_expense / pretax_income
 
