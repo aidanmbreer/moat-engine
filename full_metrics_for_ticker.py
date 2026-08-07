@@ -206,6 +206,10 @@ def full_metrics_for_ticker(ticker):
         # trajectory) without a second network fetch. Purely additive — no
         # existing key changed, no existing caller reads this.
         "us_gaap": us_gaap,
+        # Also additive — propagated from resolve_ticker() for analyze.py's
+        # scope declaration (validated-sector check).
+        "sic": resolution["sic"],
+        "sic_description": resolution["sic_description"],
     }
 
 

@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>JPM — Analysis</title>
+<style>
+  body { font-family: -apple-system, Segoe UI, Helvetica, Arial, sans-serif; margin: 2rem; color: #1a1a1a; background: #fff; }
+  h1 { font-size: 1.4rem; margin-bottom: 0.1rem; }
+  h2 { font-size: 1.05rem; margin-top: 2rem; margin-bottom: 0.6rem; border-bottom: 2px solid #1f4e78; padding-bottom: 0.2rem; }
+  .subtitle { color: #555; margin-bottom: 1.5rem; font-size: 0.9rem; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.88rem; margin-bottom: 1rem; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: right; }
+  th { background: #1f4e78; color: #fff; text-align: center; }
+  td:first-child, th:first-child { text-align: left; font-weight: 600; }
+  tr:nth-child(even) td { background: #f7f9fb; }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 0.78rem; font-weight: 600; color: #fff; }
+  .flags { text-align: left; font-size: 0.78rem; color: #555; margin-top: 2px; }
+  .verdict-box { background: #f2f6fa; border: 1px solid #ccd9e6; border-radius: 6px; padding: 1rem 1.2rem; }
+  .verdict-line { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.6rem; }
+  .signal { margin-bottom: 0.5rem; }
+  .signal .label { font-weight: 600; }
+  .caveats { margin-top: 0.8rem; font-size: 0.85rem; color: #7a4a00; }
+  .caveats li { margin-bottom: 0.3rem; }
+  .peer-note { font-size: 0.85rem; color: #666; margin-bottom: 0.8rem; }
+  .footnote { margin-top: 2rem; font-size: 0.8rem; color: #666; max-width: 800px; }
+  .scope-box { border-radius: 6px; padding: 0.8rem 1.1rem; margin-bottom: 1.5rem; font-size: 0.88rem; }
+  .scope-in { background: #eaf5ea; border: 1px solid #b6ddb6; color: #1a3d1a; }
+  .scope-out { background: #fdecea; border: 1px solid #f3b8b1; color: #5c1a14; }
+  .scope-box strong { display: block; margin-bottom: 0.2rem; }
+</style>
+</head>
+<body>
+<h1>JPMORGAN CHASE &amp; CO (JPM)</h1>
+<div class="subtitle">CIK 0000019617 — most recent fiscal year end 2025-12-31 — <a href="https://www.sec.gov/Archives/edgar/data/19617/000162828026008131/jpm-20251231.htm">source 10-K</a></div>
+
+<div class="scope-box scope-out"><strong>SCOPE: OUT OF SCOPE — SIC 6021 (National Commercial Banks)</strong>This ticker&#x27;s SIC code 6021 is outside the validated TMT/Industrials scope. The confidence framework was built and tested on TMT and Industrials filers; results for this company have NOT been validated and specific tag/derivation choices may not fit its reporting structure. Treat all outputs as unverified.</div>
+
+<h2>Current-Year Metrics</h2>
+<table>
+<thead><tr><th>Metric</th><th>Value</th><th>Confidence</th><th>Tag / Method</th></tr></thead>
+<tbody>
+<tr><td>Gross Margin</td><td>—</td><td><span class="badge" style="background:#999999">UNRESOLVED</span></td><td class="flags">No cost-of-revenue tag found (tried: CostOfRevenue, CostOfGoodsAndServicesSold). &#x27;Cost&#x27;-containing tags available as of 2025-12-31:
+    AvailableForSaleSecuritiesDebtMaturitiesNextRollingTwelveMonthsAmortizedCostBasis: $49,603,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesRollingAfterYearTenAmortizedCostBasis: $135,491,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesRollingYearSixThroughTenAmortizedCostBasis: $63,512,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesRollingYearTwoThroughFiveAmortizedCostBasis: $258,020,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesSingleMaturityDateAmortizedCostBasis: $506,626,000,000
+    DebtSecuritiesAvailableForSaleAmortizedCostAllowanceForCreditLossExcludingAccruedInterest: $41,000,000
+    DebtSecuritiesAvailableForSaleAmortizedCostExcludingAccruedInterestAfterAllowanceForCreditLoss: $507,226,000,000
+    DebtSecuritiesAvailableForSaleAndHeldToMaturityAmortizedCostAfterAllowanceForCreditLoss: $777,360,000,000
+    DefinedBenefitPlanAssumptionsUsedCalculatingNetPeriodicBenefitCostDiscountRate: $0.0549
+    DefinedBenefitPlanAssumptionsUsedCalculatingNetPeriodicBenefitCostExpectedLongTermReturnOnAssets: $0.0544
+    DefinedBenefitPlanNetPeriodicBenefitCost: $-184,000,000
+    DefinedContributionPlanCostRecognized: $1,925,000,000
+    EmployeeServiceShareBasedCompensationNonvestedAwardsTotalCompensationCostNotYetRecognized: $1,000,000,000
+    HedgedAssetFairValueHedgePortfolioLayerMethodCumulativeIncreaseDecreaseExcludedFromAmortizedCost: $641,000,000
+    LeaseCost: $2,360,000,000
+    OperatingLeaseCost: $2,388,000,000</td></tr>
+<tr><td>Operating Margin</td><td>—</td><td><span class="badge" style="background:#999999">UNRESOLVED</span></td><td class="flags">OperatingIncomeLoss not tagged for FY ended 2025-12-31, and the Revenue - COGS - SG&amp;A - R&amp;D proxy tags are also incomplete. Revenue/cost/expense tags available as of 2025-12-31 for hand-reconstruction:
+    AvailableForSaleSecuritiesDebtMaturitiesNextRollingTwelveMonthsAmortizedCostBasis: $49,603,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesRollingAfterYearTenAmortizedCostBasis: $135,491,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesRollingYearSixThroughTenAmortizedCostBasis: $63,512,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesRollingYearTwoThroughFiveAmortizedCostBasis: $258,020,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesSingleMaturityDateAmortizedCostBasis: $506,626,000,000
+    BrokerageCommissionsRevenue: $3,726,000,000
+    CurrentFederalTaxExpenseBenefit: $3,109,000,000
+    CurrentForeignTaxExpenseBenefit: $4,268,000,000
+    CurrentIncomeTaxExpenseBenefit: $9,936,000,000
+    CurrentStateAndLocalTaxExpenseBenefit: $2,559,000,000
+    DebtSecuritiesAvailableForSaleAmortizedCostAllowanceForCreditLossExcludingAccruedInterest: $41,000,000
+    DebtSecuritiesAvailableForSaleAmortizedCostExcludingAccruedInterestAfterAllowanceForCreditLoss: $507,226,000,000
+    DebtSecuritiesAvailableForSaleAndHeldToMaturityAmortizedCostAfterAllowanceForCreditLoss: $777,360,000,000
+    DebtSecuritiesHeldToMaturityCreditLossExpenseReversal: $-28,000,000
+    DeferredFederalIncomeTaxExpenseBenefit: $4,447,000,000
+    DeferredForeignIncomeTaxExpenseBenefit: $258,000,000
+    DeferredIncomeTaxExpenseBenefit: $5,611,000,000
+    DeferredStateAndLocalIncomeTaxExpenseBenefit: $906,000,000
+    DeferredTaxAssetsTaxDeferredExpenseCompensationAndBenefits: $1,079,000,000
+    DeferredTaxAssetsTaxDeferredExpenseReservesAndAccrualsLossReserves: $5,907,000,000
+    DeferredTaxAssetsTaxDeferredExpenseReservesAndAccrualsProvisionForLoanLosses: $7,402,000,000
+    DefinedBenefitPlanAssumptionsUsedCalculatingNetPeriodicBenefitCostDiscountRate: $0.0549
+    DefinedBenefitPlanAssumptionsUsedCalculatingNetPeriodicBenefitCostExpectedLongTermReturnOnAssets: $0.0544
+    DefinedBenefitPlanNetPeriodicBenefitCost: $-184,000,000
+    DefinedContributionPlanCostRecognized: $1,925,000,000
+    EmployeeServiceShareBasedCompensationNonvestedAwardsTotalCompensationCostNotYetRecognized: $1,000,000,000
+    EmployeeServiceShareBasedCompensationTaxBenefitFromCompensationExpense: $1,400,000,000
+    FederalDepositInsuranceCorporationPremiumExpense: $531,000,000
+    FinancingReceivableExcludingAccruedInterestCreditLossExpenseReversal: $11,264,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseNextTwelveMonths: $266,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseYearFive: $100,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseYearFour: $252,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseYearThree: $264,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseYearTwo: $264,000,000
+    HedgedAssetFairValueHedgePortfolioLayerMethodCumulativeIncreaseDecreaseExcludedFromAmortizedCost: $641,000,000
+    IncomeTaxExaminationPenaltiesAndInterestExpense: $241,000,000
+    IncomeTaxExpenseBenefit: $15,547,000,000
+    IncomeTaxReconciliationIncomeTaxExpenseBenefitAtFederalStatutoryIncomeTaxRate: $15,245,000,000
+    IncreaseDecreaseInPrepaidDeferredExpenseAndOtherAssets: $12,582,000,000
+    InterestExpenseBeneficialInterestsIssuedByConsolidatedVariableInterestEntities: $1,218,000,000
+    InterestExpenseDeposits: $45,112,000,000
+    InterestExpenseFederalFundsPurchasedAndSecuritiesSoldUnderAgreementsToRepurchase: $22,411,000,000
+    InterestExpenseLongTermDebt: $17,894,000,000
+    InterestExpenseOperating: $97,898,000,000
+    InterestExpenseShortTermBorrowings: $2,298,000,000
+    InterestExpenseTradingLiabilities: $8,965,000,000
+    InterestIncomeExpenseAfterProvisionForLoanLoss: $81,231,000,000
+    InterestIncomeExpenseNet: $95,443,000,000
+    InvestmentBankingRevenue: $9,615,000,000
+    LaborAndRelatedExpense: $54,487,000,000
+    LeaseCost: $2,360,000,000
+    LitigationSettlementExpense: $361,000,000
+    MarketingAndAdvertisingExpense: $5,531,000,000
+    NoncashContributionExpense: $0
+    NoninterestExpense: $95,640,000,000
+    OffBalanceSheetCreditLossLiabilityChangeInMethodCreditLossExpenseReversal: $1,000,000
+    OffBalanceSheetCreditLossLiabilityCreditLossExpenseReversal: $2,969,000,000
+    OperatingLeaseCost: $2,388,000,000
+    OperatingLeasesIncomeStatementDepreciationExpenseOnPropertySubjectToOrHeldForLease: $2,418,000,000
+    OtherNoncashIncomeExpense: $-1,309,000,000
+    OtherNoninterestExpense: $6,776,000,000
+    PensionAndOtherPostretirementBenefitExpense: $1,741,000,000
+    PrincipalTransactionsRevenue: $27,212,000,000
+    ProfessionalAndContractServicesExpense: $12,356,000,000
+    Revenues: $182,447,000,000
+    RevenuesNetOfInterestExpense: $182,447,000,000</td></tr>
+<tr><td>ROIC</td><td>—</td><td><span class="badge" style="background:#999999">UNRESOLVED</span></td><td class="flags">OperatingIncomeLoss not tagged for FY ended 2025-12-31, and the Revenue - COGS - SG&amp;A - R&amp;D proxy tags are also incomplete. Revenue/cost/expense tags available as of 2025-12-31 for hand-reconstruction:
+    AvailableForSaleSecuritiesDebtMaturitiesNextRollingTwelveMonthsAmortizedCostBasis: $49,603,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesRollingAfterYearTenAmortizedCostBasis: $135,491,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesRollingYearSixThroughTenAmortizedCostBasis: $63,512,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesRollingYearTwoThroughFiveAmortizedCostBasis: $258,020,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesSingleMaturityDateAmortizedCostBasis: $506,626,000,000
+    BrokerageCommissionsRevenue: $3,726,000,000
+    CurrentFederalTaxExpenseBenefit: $3,109,000,000
+    CurrentForeignTaxExpenseBenefit: $4,268,000,000
+    CurrentIncomeTaxExpenseBenefit: $9,936,000,000
+    CurrentStateAndLocalTaxExpenseBenefit: $2,559,000,000
+    DebtSecuritiesAvailableForSaleAmortizedCostAllowanceForCreditLossExcludingAccruedInterest: $41,000,000
+    DebtSecuritiesAvailableForSaleAmortizedCostExcludingAccruedInterestAfterAllowanceForCreditLoss: $507,226,000,000
+    DebtSecuritiesAvailableForSaleAndHeldToMaturityAmortizedCostAfterAllowanceForCreditLoss: $777,360,000,000
+    DebtSecuritiesHeldToMaturityCreditLossExpenseReversal: $-28,000,000
+    DeferredFederalIncomeTaxExpenseBenefit: $4,447,000,000
+    DeferredForeignIncomeTaxExpenseBenefit: $258,000,000
+    DeferredIncomeTaxExpenseBenefit: $5,611,000,000
+    DeferredStateAndLocalIncomeTaxExpenseBenefit: $906,000,000
+    DeferredTaxAssetsTaxDeferredExpenseCompensationAndBenefits: $1,079,000,000
+    DeferredTaxAssetsTaxDeferredExpenseReservesAndAccrualsLossReserves: $5,907,000,000
+    DeferredTaxAssetsTaxDeferredExpenseReservesAndAccrualsProvisionForLoanLosses: $7,402,000,000
+    DefinedBenefitPlanAssumptionsUsedCalculatingNetPeriodicBenefitCostDiscountRate: $0.0549
+    DefinedBenefitPlanAssumptionsUsedCalculatingNetPeriodicBenefitCostExpectedLongTermReturnOnAssets: $0.0544
+    DefinedBenefitPlanNetPeriodicBenefitCost: $-184,000,000
+    DefinedContributionPlanCostRecognized: $1,925,000,000
+    EmployeeServiceShareBasedCompensationNonvestedAwardsTotalCompensationCostNotYetRecognized: $1,000,000,000
+    EmployeeServiceShareBasedCompensationTaxBenefitFromCompensationExpense: $1,400,000,000
+    FederalDepositInsuranceCorporationPremiumExpense: $531,000,000
+    FinancingReceivableExcludingAccruedInterestCreditLossExpenseReversal: $11,264,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseNextTwelveMonths: $266,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseYearFive: $100,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseYearFour: $252,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseYearThree: $264,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseYearTwo: $264,000,000
+    HedgedAssetFairValueHedgePortfolioLayerMethodCumulativeIncreaseDecreaseExcludedFromAmortizedCost: $641,000,000
+    IncomeTaxExaminationPenaltiesAndInterestExpense: $241,000,000
+    IncomeTaxExpenseBenefit: $15,547,000,000
+    IncomeTaxReconciliationIncomeTaxExpenseBenefitAtFederalStatutoryIncomeTaxRate: $15,245,000,000
+    IncreaseDecreaseInPrepaidDeferredExpenseAndOtherAssets: $12,582,000,000
+    InterestExpenseBeneficialInterestsIssuedByConsolidatedVariableInterestEntities: $1,218,000,000
+    InterestExpenseDeposits: $45,112,000,000
+    InterestExpenseFederalFundsPurchasedAndSecuritiesSoldUnderAgreementsToRepurchase: $22,411,000,000
+    InterestExpenseLongTermDebt: $17,894,000,000
+    InterestExpenseOperating: $97,898,000,000
+    InterestExpenseShortTermBorrowings: $2,298,000,000
+    InterestExpenseTradingLiabilities: $8,965,000,000
+    InterestIncomeExpenseAfterProvisionForLoanLoss: $81,231,000,000
+    InterestIncomeExpenseNet: $95,443,000,000
+    InvestmentBankingRevenue: $9,615,000,000
+    LaborAndRelatedExpense: $54,487,000,000
+    LeaseCost: $2,360,000,000
+    LitigationSettlementExpense: $361,000,000
+    MarketingAndAdvertisingExpense: $5,531,000,000
+    NoncashContributionExpense: $0
+    NoninterestExpense: $95,640,000,000
+    OffBalanceSheetCreditLossLiabilityChangeInMethodCreditLossExpenseReversal: $1,000,000
+    OffBalanceSheetCreditLossLiabilityCreditLossExpenseReversal: $2,969,000,000
+    OperatingLeaseCost: $2,388,000,000
+    OperatingLeasesIncomeStatementDepreciationExpenseOnPropertySubjectToOrHeldForLease: $2,418,000,000
+    OtherNoncashIncomeExpense: $-1,309,000,000
+    OtherNoninterestExpense: $6,776,000,000
+    PensionAndOtherPostretirementBenefitExpense: $1,741,000,000
+    PrincipalTransactionsRevenue: $27,212,000,000
+    ProfessionalAndContractServicesExpense: $12,356,000,000
+    Revenues: $182,447,000,000
+    RevenuesNetOfInterestExpense: $182,447,000,000</td></tr>
+<tr><td>Debt / EBITDA</td><td>—</td><td><span class="badge" style="background:#999999">UNRESOLVED</span></td><td class="flags">Operating income unresolved: OperatingIncomeLoss not tagged for FY ended 2025-12-31, and the Revenue - COGS - SG&amp;A - R&amp;D proxy tags are also incomplete. Revenue/cost/expense tags available as of 2025-12-31 for hand-reconstruction:
+    AvailableForSaleSecuritiesDebtMaturitiesNextRollingTwelveMonthsAmortizedCostBasis: $49,603,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesRollingAfterYearTenAmortizedCostBasis: $135,491,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesRollingYearSixThroughTenAmortizedCostBasis: $63,512,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesRollingYearTwoThroughFiveAmortizedCostBasis: $258,020,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesSingleMaturityDateAmortizedCostBasis: $506,626,000,000
+    BrokerageCommissionsRevenue: $3,726,000,000
+    CurrentFederalTaxExpenseBenefit: $3,109,000,000
+    CurrentForeignTaxExpenseBenefit: $4,268,000,000
+    CurrentIncomeTaxExpenseBenefit: $9,936,000,000
+    CurrentStateAndLocalTaxExpenseBenefit: $2,559,000,000
+    DebtSecuritiesAvailableForSaleAmortizedCostAllowanceForCreditLossExcludingAccruedInterest: $41,000,000
+    DebtSecuritiesAvailableForSaleAmortizedCostExcludingAccruedInterestAfterAllowanceForCreditLoss: $507,226,000,000
+    DebtSecuritiesAvailableForSaleAndHeldToMaturityAmortizedCostAfterAllowanceForCreditLoss: $777,360,000,000
+    DebtSecuritiesHeldToMaturityCreditLossExpenseReversal: $-28,000,000
+    DeferredFederalIncomeTaxExpenseBenefit: $4,447,000,000
+    DeferredForeignIncomeTaxExpenseBenefit: $258,000,000
+    DeferredIncomeTaxExpenseBenefit: $5,611,000,000
+    DeferredStateAndLocalIncomeTaxExpenseBenefit: $906,000,000
+    DeferredTaxAssetsTaxDeferredExpenseCompensationAndBenefits: $1,079,000,000
+    DeferredTaxAssetsTaxDeferredExpenseReservesAndAccrualsLossReserves: $5,907,000,000
+    DeferredTaxAssetsTaxDeferredExpenseReservesAndAccrualsProvisionForLoanLosses: $7,402,000,000
+    DefinedBenefitPlanAssumptionsUsedCalculatingNetPeriodicBenefitCostDiscountRate: $0.0549
+    DefinedBenefitPlanAssumptionsUsedCalculatingNetPeriodicBenefitCostExpectedLongTermReturnOnAssets: $0.0544
+    DefinedBenefitPlanNetPeriodicBenefitCost: $-184,000,000
+    DefinedContributionPlanCostRecognized: $1,925,000,000
+    EmployeeServiceShareBasedCompensationNonvestedAwardsTotalCompensationCostNotYetRecognized: $1,000,000,000
+    EmployeeServiceShareBasedCompensationTaxBenefitFromCompensationExpense: $1,400,000,000
+    FederalDepositInsuranceCorporationPremiumExpense: $531,000,000
+    FinancingReceivableExcludingAccruedInterestCreditLossExpenseReversal: $11,264,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseNextTwelveMonths: $266,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseYearFive: $100,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseYearFour: $252,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseYearThree: $264,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseYearTwo: $264,000,000
+    HedgedAssetFairValueHedgePortfolioLayerMethodCumulativeIncreaseDecreaseExcludedFromAmortizedCost: $641,000,000
+    IncomeTaxExaminationPenaltiesAndInterestExpense: $241,000,000
+    IncomeTaxExpenseBenefit: $15,547,000,000
+    IncomeTaxReconciliationIncomeTaxExpenseBenefitAtFederalStatutoryIncomeTaxRate: $15,245,000,000
+    IncreaseDecreaseInPrepaidDeferredExpenseAndOtherAssets: $12,582,000,000
+    InterestExpenseBeneficialInterestsIssuedByConsolidatedVariableInterestEntities: $1,218,000,000
+    InterestExpenseDeposits: $45,112,000,000
+    InterestExpenseFederalFundsPurchasedAndSecuritiesSoldUnderAgreementsToRepurchase: $22,411,000,000
+    InterestExpenseLongTermDebt: $17,894,000,000
+    InterestExpenseOperating: $97,898,000,000
+    InterestExpenseShortTermBorrowings: $2,298,000,000
+    InterestExpenseTradingLiabilities: $8,965,000,000
+    InterestIncomeExpenseAfterProvisionForLoanLoss: $81,231,000,000
+    InterestIncomeExpenseNet: $95,443,000,000
+    InvestmentBankingRevenue: $9,615,000,000
+    LaborAndRelatedExpense: $54,487,000,000
+    LeaseCost: $2,360,000,000
+    LitigationSettlementExpense: $361,000,000
+    MarketingAndAdvertisingExpense: $5,531,000,000
+    NoncashContributionExpense: $0
+    NoninterestExpense: $95,640,000,000
+    OffBalanceSheetCreditLossLiabilityChangeInMethodCreditLossExpenseReversal: $1,000,000
+    OffBalanceSheetCreditLossLiabilityCreditLossExpenseReversal: $2,969,000,000
+    OperatingLeaseCost: $2,388,000,000
+    OperatingLeasesIncomeStatementDepreciationExpenseOnPropertySubjectToOrHeldForLease: $2,418,000,000
+    OtherNoncashIncomeExpense: $-1,309,000,000
+    OtherNoninterestExpense: $6,776,000,000
+    PensionAndOtherPostretirementBenefitExpense: $1,741,000,000
+    PrincipalTransactionsRevenue: $27,212,000,000
+    ProfessionalAndContractServicesExpense: $12,356,000,000
+    Revenues: $182,447,000,000
+    RevenuesNetOfInterestExpense: $182,447,000,000</td></tr>
+<tr><td>Net Debt / EBITDA</td><td>—</td><td><span class="badge" style="background:#999999">UNRESOLVED</span></td><td class="flags">Operating income unresolved: OperatingIncomeLoss not tagged for FY ended 2025-12-31, and the Revenue - COGS - SG&amp;A - R&amp;D proxy tags are also incomplete. Revenue/cost/expense tags available as of 2025-12-31 for hand-reconstruction:
+    AvailableForSaleSecuritiesDebtMaturitiesNextRollingTwelveMonthsAmortizedCostBasis: $49,603,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesRollingAfterYearTenAmortizedCostBasis: $135,491,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesRollingYearSixThroughTenAmortizedCostBasis: $63,512,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesRollingYearTwoThroughFiveAmortizedCostBasis: $258,020,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesSingleMaturityDateAmortizedCostBasis: $506,626,000,000
+    BrokerageCommissionsRevenue: $3,726,000,000
+    CurrentFederalTaxExpenseBenefit: $3,109,000,000
+    CurrentForeignTaxExpenseBenefit: $4,268,000,000
+    CurrentIncomeTaxExpenseBenefit: $9,936,000,000
+    CurrentStateAndLocalTaxExpenseBenefit: $2,559,000,000
+    DebtSecuritiesAvailableForSaleAmortizedCostAllowanceForCreditLossExcludingAccruedInterest: $41,000,000
+    DebtSecuritiesAvailableForSaleAmortizedCostExcludingAccruedInterestAfterAllowanceForCreditLoss: $507,226,000,000
+    DebtSecuritiesAvailableForSaleAndHeldToMaturityAmortizedCostAfterAllowanceForCreditLoss: $777,360,000,000
+    DebtSecuritiesHeldToMaturityCreditLossExpenseReversal: $-28,000,000
+    DeferredFederalIncomeTaxExpenseBenefit: $4,447,000,000
+    DeferredForeignIncomeTaxExpenseBenefit: $258,000,000
+    DeferredIncomeTaxExpenseBenefit: $5,611,000,000
+    DeferredStateAndLocalIncomeTaxExpenseBenefit: $906,000,000
+    DeferredTaxAssetsTaxDeferredExpenseCompensationAndBenefits: $1,079,000,000
+    DeferredTaxAssetsTaxDeferredExpenseReservesAndAccrualsLossReserves: $5,907,000,000
+    DeferredTaxAssetsTaxDeferredExpenseReservesAndAccrualsProvisionForLoanLosses: $7,402,000,000
+    DefinedBenefitPlanAssumptionsUsedCalculatingNetPeriodicBenefitCostDiscountRate: $0.0549
+    DefinedBenefitPlanAssumptionsUsedCalculatingNetPeriodicBenefitCostExpectedLongTermReturnOnAssets: $0.0544
+    DefinedBenefitPlanNetPeriodicBenefitCost: $-184,000,000
+    DefinedContributionPlanCostRecognized: $1,925,000,000
+    EmployeeServiceShareBasedCompensationNonvestedAwardsTotalCompensationCostNotYetRecognized: $1,000,000,000
+    EmployeeServiceShareBasedCompensationTaxBenefitFromCompensationExpense: $1,400,000,000
+    FederalDepositInsuranceCorporationPremiumExpense: $531,000,000
+    FinancingReceivableExcludingAccruedInterestCreditLossExpenseReversal: $11,264,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseNextTwelveMonths: $266,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseYearFive: $100,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseYearFour: $252,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseYearThree: $264,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseYearTwo: $264,000,000
+    HedgedAssetFairValueHedgePortfolioLayerMethodCumulativeIncreaseDecreaseExcludedFromAmortizedCost: $641,000,000
+    IncomeTaxExaminationPenaltiesAndInterestExpense: $241,000,000
+    IncomeTaxExpenseBenefit: $15,547,000,000
+    IncomeTaxReconciliationIncomeTaxExpenseBenefitAtFederalStatutoryIncomeTaxRate: $15,245,000,000
+    IncreaseDecreaseInPrepaidDeferredExpenseAndOtherAssets: $12,582,000,000
+    InterestExpenseBeneficialInterestsIssuedByConsolidatedVariableInterestEntities: $1,218,000,000
+    InterestExpenseDeposits: $45,112,000,000
+    InterestExpenseFederalFundsPurchasedAndSecuritiesSoldUnderAgreementsToRepurchase: $22,411,000,000
+    InterestExpenseLongTermDebt: $17,894,000,000
+    InterestExpenseOperating: $97,898,000,000
+    InterestExpenseShortTermBorrowings: $2,298,000,000
+    InterestExpenseTradingLiabilities: $8,965,000,000
+    InterestIncomeExpenseAfterProvisionForLoanLoss: $81,231,000,000
+    InterestIncomeExpenseNet: $95,443,000,000
+    InvestmentBankingRevenue: $9,615,000,000
+    LaborAndRelatedExpense: $54,487,000,000
+    LeaseCost: $2,360,000,000
+    LitigationSettlementExpense: $361,000,000
+    MarketingAndAdvertisingExpense: $5,531,000,000
+    NoncashContributionExpense: $0
+    NoninterestExpense: $95,640,000,000
+    OffBalanceSheetCreditLossLiabilityChangeInMethodCreditLossExpenseReversal: $1,000,000
+    OffBalanceSheetCreditLossLiabilityCreditLossExpenseReversal: $2,969,000,000
+    OperatingLeaseCost: $2,388,000,000
+    OperatingLeasesIncomeStatementDepreciationExpenseOnPropertySubjectToOrHeldForLease: $2,418,000,000
+    OtherNoncashIncomeExpense: $-1,309,000,000
+    OtherNoninterestExpense: $6,776,000,000
+    PensionAndOtherPostretirementBenefitExpense: $1,741,000,000
+    PrincipalTransactionsRevenue: $27,212,000,000
+    ProfessionalAndContractServicesExpense: $12,356,000,000
+    Revenues: $182,447,000,000
+    RevenuesNetOfInterestExpense: $182,447,000,000</td></tr>
+<tr><td>Interest Coverage (EBITDA / Interest)</td><td>—</td><td><span class="badge" style="background:#999999">UNRESOLVED</span></td><td class="flags">Operating income unresolved: OperatingIncomeLoss not tagged for FY ended 2025-12-31, and the Revenue - COGS - SG&amp;A - R&amp;D proxy tags are also incomplete. Revenue/cost/expense tags available as of 2025-12-31 for hand-reconstruction:
+    AvailableForSaleSecuritiesDebtMaturitiesNextRollingTwelveMonthsAmortizedCostBasis: $49,603,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesRollingAfterYearTenAmortizedCostBasis: $135,491,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesRollingYearSixThroughTenAmortizedCostBasis: $63,512,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesRollingYearTwoThroughFiveAmortizedCostBasis: $258,020,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesSingleMaturityDateAmortizedCostBasis: $506,626,000,000
+    BrokerageCommissionsRevenue: $3,726,000,000
+    CurrentFederalTaxExpenseBenefit: $3,109,000,000
+    CurrentForeignTaxExpenseBenefit: $4,268,000,000
+    CurrentIncomeTaxExpenseBenefit: $9,936,000,000
+    CurrentStateAndLocalTaxExpenseBenefit: $2,559,000,000
+    DebtSecuritiesAvailableForSaleAmortizedCostAllowanceForCreditLossExcludingAccruedInterest: $41,000,000
+    DebtSecuritiesAvailableForSaleAmortizedCostExcludingAccruedInterestAfterAllowanceForCreditLoss: $507,226,000,000
+    DebtSecuritiesAvailableForSaleAndHeldToMaturityAmortizedCostAfterAllowanceForCreditLoss: $777,360,000,000
+    DebtSecuritiesHeldToMaturityCreditLossExpenseReversal: $-28,000,000
+    DeferredFederalIncomeTaxExpenseBenefit: $4,447,000,000
+    DeferredForeignIncomeTaxExpenseBenefit: $258,000,000
+    DeferredIncomeTaxExpenseBenefit: $5,611,000,000
+    DeferredStateAndLocalIncomeTaxExpenseBenefit: $906,000,000
+    DeferredTaxAssetsTaxDeferredExpenseCompensationAndBenefits: $1,079,000,000
+    DeferredTaxAssetsTaxDeferredExpenseReservesAndAccrualsLossReserves: $5,907,000,000
+    DeferredTaxAssetsTaxDeferredExpenseReservesAndAccrualsProvisionForLoanLosses: $7,402,000,000
+    DefinedBenefitPlanAssumptionsUsedCalculatingNetPeriodicBenefitCostDiscountRate: $0.0549
+    DefinedBenefitPlanAssumptionsUsedCalculatingNetPeriodicBenefitCostExpectedLongTermReturnOnAssets: $0.0544
+    DefinedBenefitPlanNetPeriodicBenefitCost: $-184,000,000
+    DefinedContributionPlanCostRecognized: $1,925,000,000
+    EmployeeServiceShareBasedCompensationNonvestedAwardsTotalCompensationCostNotYetRecognized: $1,000,000,000
+    EmployeeServiceShareBasedCompensationTaxBenefitFromCompensationExpense: $1,400,000,000
+    FederalDepositInsuranceCorporationPremiumExpense: $531,000,000
+    FinancingReceivableExcludingAccruedInterestCreditLossExpenseReversal: $11,264,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseNextTwelveMonths: $266,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseYearFive: $100,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseYearFour: $252,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseYearThree: $264,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseYearTwo: $264,000,000
+    HedgedAssetFairValueHedgePortfolioLayerMethodCumulativeIncreaseDecreaseExcludedFromAmortizedCost: $641,000,000
+    IncomeTaxExaminationPenaltiesAndInterestExpense: $241,000,000
+    IncomeTaxExpenseBenefit: $15,547,000,000
+    IncomeTaxReconciliationIncomeTaxExpenseBenefitAtFederalStatutoryIncomeTaxRate: $15,245,000,000
+    IncreaseDecreaseInPrepaidDeferredExpenseAndOtherAssets: $12,582,000,000
+    InterestExpenseBeneficialInterestsIssuedByConsolidatedVariableInterestEntities: $1,218,000,000
+    InterestExpenseDeposits: $45,112,000,000
+    InterestExpenseFederalFundsPurchasedAndSecuritiesSoldUnderAgreementsToRepurchase: $22,411,000,000
+    InterestExpenseLongTermDebt: $17,894,000,000
+    InterestExpenseOperating: $97,898,000,000
+    InterestExpenseShortTermBorrowings: $2,298,000,000
+    InterestExpenseTradingLiabilities: $8,965,000,000
+    InterestIncomeExpenseAfterProvisionForLoanLoss: $81,231,000,000
+    InterestIncomeExpenseNet: $95,443,000,000
+    InvestmentBankingRevenue: $9,615,000,000
+    LaborAndRelatedExpense: $54,487,000,000
+    LeaseCost: $2,360,000,000
+    LitigationSettlementExpense: $361,000,000
+    MarketingAndAdvertisingExpense: $5,531,000,000
+    NoncashContributionExpense: $0
+    NoninterestExpense: $95,640,000,000
+    OffBalanceSheetCreditLossLiabilityChangeInMethodCreditLossExpenseReversal: $1,000,000
+    OffBalanceSheetCreditLossLiabilityCreditLossExpenseReversal: $2,969,000,000
+    OperatingLeaseCost: $2,388,000,000
+    OperatingLeasesIncomeStatementDepreciationExpenseOnPropertySubjectToOrHeldForLease: $2,418,000,000
+    OtherNoncashIncomeExpense: $-1,309,000,000
+    OtherNoninterestExpense: $6,776,000,000
+    PensionAndOtherPostretirementBenefitExpense: $1,741,000,000
+    PrincipalTransactionsRevenue: $27,212,000,000
+    ProfessionalAndContractServicesExpense: $12,356,000,000
+    Revenues: $182,447,000,000
+    RevenuesNetOfInterestExpense: $182,447,000,000</td></tr>
+</tbody>
+</table>
+
+<h2>5-Year Trajectory</h2>
+<table>
+<thead><tr><th>Metric</th><th>FY2021</th><th>FY2022</th><th>FY2023</th><th>FY2024</th><th>FY2025</th><th>Direction</th></tr></thead>
+<tbody>
+<tr><td>Gross Margin</td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>insufficient data</td></tr>
+<tr><td>Operating Margin</td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>insufficient data</td></tr>
+<tr><td>ROIC</td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>insufficient data</td></tr>
+<tr><td>Debt / EBITDA</td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>insufficient data</td></tr>
+<tr><td>Net Debt / EBITDA</td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>insufficient data</td></tr>
+<tr><td>Interest Coverage (EBITDA / Interest)</td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>—<div class="flags">[unresolved]</div></td><td>insufficient data</td></tr>
+</tbody>
+</table>
+
+<h2>Verdict</h2>
+<div class="peer-note">Benchmarked against this tool's peer group (VRT, ETN, PWR, NVT) — JPM is outside that four-company coverage set, so treat the margin-spread signal below as directional only, not an apples-to-apples industry comparison.</div>
+<div class="verdict-box">
+<div class="verdict-line">VERDICT: not computed — fetch_verdict.py&#x27;s durability signal requires a resolved current-year operating margin, which is unresolved for JPM (OperatingIncomeLoss not tagged for FY ended 2025-12-31, and the Revenue - COGS - SG&amp;A - R&amp;D proxy tags are also incomplete. Revenue/cost/expense tags available as of 2025-12-31 for hand-reconstruction:
+    AvailableForSaleSecuritiesDebtMaturitiesNextRollingTwelveMonthsAmortizedCostBasis: $49,603,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesRollingAfterYearTenAmortizedCostBasis: $135,491,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesRollingYearSixThroughTenAmortizedCostBasis: $63,512,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesRollingYearTwoThroughFiveAmortizedCostBasis: $258,020,000,000
+    AvailableForSaleSecuritiesDebtMaturitiesSingleMaturityDateAmortizedCostBasis: $506,626,000,000
+    BrokerageCommissionsRevenue: $3,726,000,000
+    CurrentFederalTaxExpenseBenefit: $3,109,000,000
+    CurrentForeignTaxExpenseBenefit: $4,268,000,000
+    CurrentIncomeTaxExpenseBenefit: $9,936,000,000
+    CurrentStateAndLocalTaxExpenseBenefit: $2,559,000,000
+    DebtSecuritiesAvailableForSaleAmortizedCostAllowanceForCreditLossExcludingAccruedInterest: $41,000,000
+    DebtSecuritiesAvailableForSaleAmortizedCostExcludingAccruedInterestAfterAllowanceForCreditLoss: $507,226,000,000
+    DebtSecuritiesAvailableForSaleAndHeldToMaturityAmortizedCostAfterAllowanceForCreditLoss: $777,360,000,000
+    DebtSecuritiesHeldToMaturityCreditLossExpenseReversal: $-28,000,000
+    DeferredFederalIncomeTaxExpenseBenefit: $4,447,000,000
+    DeferredForeignIncomeTaxExpenseBenefit: $258,000,000
+    DeferredIncomeTaxExpenseBenefit: $5,611,000,000
+    DeferredStateAndLocalIncomeTaxExpenseBenefit: $906,000,000
+    DeferredTaxAssetsTaxDeferredExpenseCompensationAndBenefits: $1,079,000,000
+    DeferredTaxAssetsTaxDeferredExpenseReservesAndAccrualsLossReserves: $5,907,000,000
+    DeferredTaxAssetsTaxDeferredExpenseReservesAndAccrualsProvisionForLoanLosses: $7,402,000,000
+    DefinedBenefitPlanAssumptionsUsedCalculatingNetPeriodicBenefitCostDiscountRate: $0.0549
+    DefinedBenefitPlanAssumptionsUsedCalculatingNetPeriodicBenefitCostExpectedLongTermReturnOnAssets: $0.0544
+    DefinedBenefitPlanNetPeriodicBenefitCost: $-184,000,000
+    DefinedContributionPlanCostRecognized: $1,925,000,000
+    EmployeeServiceShareBasedCompensationNonvestedAwardsTotalCompensationCostNotYetRecognized: $1,000,000,000
+    EmployeeServiceShareBasedCompensationTaxBenefitFromCompensationExpense: $1,400,000,000
+    FederalDepositInsuranceCorporationPremiumExpense: $531,000,000
+    FinancingReceivableExcludingAccruedInterestCreditLossExpenseReversal: $11,264,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseNextTwelveMonths: $266,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseYearFive: $100,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseYearFour: $252,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseYearThree: $264,000,000
+    FiniteLivedIntangibleAssetsAmortizationExpenseYearTwo: $264,000,000
+    HedgedAssetFairValueHedgePortfolioLayerMethodCumulativeIncreaseDecreaseExcludedFromAmortizedCost: $641,000,000
+    IncomeTaxExaminationPenaltiesAndInterestExpense: $241,000,000
+    IncomeTaxExpenseBenefit: $15,547,000,000
+    IncomeTaxReconciliationIncomeTaxExpenseBenefitAtFederalStatutoryIncomeTaxRate: $15,245,000,000
+    IncreaseDecreaseInPrepaidDeferredExpenseAndOtherAssets: $12,582,000,000
+    InterestExpenseBeneficialInterestsIssuedByConsolidatedVariableInterestEntities: $1,218,000,000
+    InterestExpenseDeposits: $45,112,000,000
+    InterestExpenseFederalFundsPurchasedAndSecuritiesSoldUnderAgreementsToRepurchase: $22,411,000,000
+    InterestExpenseLongTermDebt: $17,894,000,000
+    InterestExpenseOperating: $97,898,000,000
+    InterestExpenseShortTermBorrowings: $2,298,000,000
+    InterestExpenseTradingLiabilities: $8,965,000,000
+    InterestIncomeExpenseAfterProvisionForLoanLoss: $81,231,000,000
+    InterestIncomeExpenseNet: $95,443,000,000
+    InvestmentBankingRevenue: $9,615,000,000
+    LaborAndRelatedExpense: $54,487,000,000
+    LeaseCost: $2,360,000,000
+    LitigationSettlementExpense: $361,000,000
+    MarketingAndAdvertisingExpense: $5,531,000,000
+    NoncashContributionExpense: $0
+    NoninterestExpense: $95,640,000,000
+    OffBalanceSheetCreditLossLiabilityChangeInMethodCreditLossExpenseReversal: $1,000,000
+    OffBalanceSheetCreditLossLiabilityCreditLossExpenseReversal: $2,969,000,000
+    OperatingLeaseCost: $2,388,000,000
+    OperatingLeasesIncomeStatementDepreciationExpenseOnPropertySubjectToOrHeldForLease: $2,418,000,000
+    OtherNoncashIncomeExpense: $-1,309,000,000
+    OtherNoninterestExpense: $6,776,000,000
+    PensionAndOtherPostretirementBenefitExpense: $1,741,000,000
+    PrincipalTransactionsRevenue: $27,212,000,000
+    ProfessionalAndContractServicesExpense: $12,356,000,000
+    Revenues: $182,447,000,000
+    RevenuesNetOfInterestExpense: $182,447,000,000). This is exactly the kind of structural mismatch the SCOPE caution above exists to flag.</div>
+
+
+</div>
+
+<div class="footnote">
+Every number above is computed by the existing, already-validated modules (fetch_margins.py, fetch_roic_others.py,
+fetch_credit_metrics.py, fetch_trajectory.py, fetch_verdict.py) — analyze.py only resolves the ticker, calls them,
+and assembles this one report; no metric is recomputed here.
+</div>
+</body>
+</html>

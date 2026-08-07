@@ -61,6 +61,65 @@ OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output")
 PEER_TICKERS = fetch_trajectory.TICKERS  # ["VRT", "ETN", "PWR", "NVT"] — this tool's only peer group
 
 
+# --- Scope declaration -------------------------------------------------
+# The confidence framework (candidate tag lists, derivations, fallback
+# rules across fetch_margins.py/fetch_roic_others.py/fetch_credit_metrics.py)
+# was built and validated only against TMT and Industrials filers: VRT,
+# ETN, PWR, NVT, CAT, and HON (Industrials), plus ORCL and NVDA (TMT).
+# It has never been run against a bank, insurer, REIT, utility, or pharma
+# filer — whose financial-statement structures (e.g. a bank's income
+# statement has no "cost of revenue" line at all; insurers/REITs use
+# regulatory-capital or FFO concepts instead of a debt/EBITDA-shaped
+# balance sheet) don't fit the assumptions those candidate lists encode.
+# This is a boundary check, not a sector classifier — it exists only to
+# flag when a ticker falls outside what's been validated.
+#
+# SIC (Standard Industrial Classification) ranges below, checked TMT
+# first then Industrials (narrower TMT bands — e.g. 3672-3674 for
+# semiconductors — are checked before the broader Industrials electronics
+# band, so a code like VRT's 3679 "Electronic Components, NEC" falls
+# through to Industrials rather than being swallowed by the semiconductor
+# band next to it). SIC codes are self-reported by the filer and
+# imperfect, so this only ever produces a caution, never a refusal.
+TMT_SIC_RANGES = [
+    (3570, 3579, "Computer & office equipment"),
+    (3672, 3674, "Semiconductors / printed circuit boards"),
+    (4800, 4899, "Communications (telecom, broadcasting)"),
+    (7370, 7379, "Computer services (software, data processing)"),
+]
+INDUSTRIALS_SIC_RANGES = [
+    (1500, 1799, "Construction"),
+    (3400, 3599, "Fabricated metal products; industrial & commercial machinery"),
+    (3600, 3699, "Electronic & other electrical equipment"),
+    (3700, 3799, "Transportation equipment (incl. aerospace/defense)"),
+    (3800, 3849, "Measuring, analyzing & controlling instruments"),
+]
+
+
+def classify_scope(sic):
+    """Returns (in_scope, sector_label, band_description). sector_label
+    and band_description are None when out of scope or sic is unusable."""
+    try:
+        sic_int = int(sic)
+    except (TypeError, ValueError):
+        return False, None, None
+    for lo, hi, desc in TMT_SIC_RANGES:
+        if lo <= sic_int <= hi:
+            return True, "TMT", desc
+    for lo, hi, desc in INDUSTRIALS_SIC_RANGES:
+        if lo <= sic_int <= hi:
+            return True, "Industrials", desc
+    return False, None, None
+
+
+OUT_OF_SCOPE_CAUTION = (
+    "This ticker's SIC code {sic} is outside the validated TMT/Industrials scope. The "
+    "confidence framework was built and tested on TMT and Industrials filers; results for this "
+    "company have NOT been validated and specific tag/derivation choices may not fit its "
+    "reporting structure. Treat all outputs as unverified."
+)
+
+
 def _get_json(url):
     resp = requests.get(url, headers=HEADERS)
     resp.raise_for_status()
@@ -119,6 +178,8 @@ def analyze(ticker):
     if current["status"] == "error":
         return {"status": "error", "ticker": ticker, "reason": current["reason"]}
 
+    in_scope, sector_label, band_desc = classify_scope(current["sic"])
+
     all_series = dict(peer_series)
     all_series[ticker] = trajectory_series  # self-consistent if ticker is already one of the peers
 
@@ -133,13 +194,34 @@ def analyze(ticker):
     )
     sentences = fetch_customer_concentration.customer_concentration_sentences(text)
 
-    # print_company_verdict() both prints its console block and (as of the
-    # additive change made for this task) returns the same computed values —
-    # called exactly once here so its printed side effect isn't duplicated
-    # between the console report and the HTML report.
-    verdict_buf = io.StringIO()
-    with redirect_stdout(verdict_buf):
-        verdict = fetch_verdict.print_company_verdict(ticker, all_series, gross_spread, op_spread, sentences)
+    # fetch_verdict.durability() does an unguarded numeric comparison against
+    # the target's current-year operating margin — never a problem for any
+    # TMT/Industrials filer this tool has been validated on (operating
+    # margin always resolves), but a filer genuinely outside that scope can
+    # have it come back unresolved (e.g. a bank's income statement doesn't
+    # have an OperatingIncomeLoss-shaped line), which would crash it. Rather
+    # than reshaping fetch_verdict.py's logic to add a null-safety path it's
+    # never needed before, this is guarded here at the call site: the
+    # verdict is skipped (not silently partial) when its required input
+    # isn't there, which is exactly the situation the scope declaration
+    # above exists to warn about.
+    om = current["metrics"]["operating_margin"]
+    if om["status"] == "unresolved":
+        verdict = None
+        verdict_console_text = (
+            "VERDICT: not computed — fetch_verdict.py's durability signal requires a resolved "
+            f"current-year operating margin, which is unresolved for {ticker} ({om['reason']}). "
+            "This is exactly the kind of structural mismatch the SCOPE caution above exists to flag.\n"
+        )
+    else:
+        # print_company_verdict() both prints its console block and (as of the
+        # additive change made for this task) returns the same computed values —
+        # called exactly once here so its printed side effect isn't duplicated
+        # between the console report and the HTML report.
+        verdict_buf = io.StringIO()
+        with redirect_stdout(verdict_buf):
+            verdict = fetch_verdict.print_company_verdict(ticker, all_series, gross_spread, op_spread, sentences)
+        verdict_console_text = verdict_buf.getvalue()
 
     return {
         "status": "ok",
@@ -155,8 +237,26 @@ def analyze(ticker):
         "all_series": all_series,
         "is_peer": ticker in PEER_TICKERS,
         "verdict": verdict,
-        "verdict_console_text": verdict_buf.getvalue(),
+        "verdict_console_text": verdict_console_text,
+        "in_scope": in_scope,
+        "sector_label": sector_label,
+        "sic_band_description": band_desc,
     }
+
+
+def scope_console_text(report):
+    current = report["current"]
+    sic = current["sic"]
+    sic_desc = current["sic_description"] or "(no SIC description on file)"
+    if report["in_scope"]:
+        return (
+            f"SCOPE: SIC {sic} ({sic_desc}) — detected sector: {report['sector_label']} "
+            f"({report['sic_band_description']}). This ticker is IN the validated TMT/Industrials scope."
+        )
+    return (
+        f"SCOPE: SIC {sic} ({sic_desc}) — OUTSIDE the validated TMT/Industrials scope.\n"
+        f"CAUTION: {OUT_OF_SCOPE_CAUTION.format(sic=sic)}"
+    )
 
 
 def print_report(report):
@@ -170,6 +270,8 @@ def print_report(report):
     print("=" * 78)
     print(f"ANALYZE: {ticker} — unified single-ticker report")
     print("=" * 78)
+    print()
+    print(scope_console_text(report))
     print()
 
     print("--- CURRENT-YEAR METRICS (with confidence flags) ---")
@@ -221,11 +323,17 @@ HTML_TEMPLATE = """<!doctype html>
   .caveats li {{ margin-bottom: 0.3rem; }}
   .peer-note {{ font-size: 0.85rem; color: #666; margin-bottom: 0.8rem; }}
   .footnote {{ margin-top: 2rem; font-size: 0.8rem; color: #666; max-width: 800px; }}
+  .scope-box {{ border-radius: 6px; padding: 0.8rem 1.1rem; margin-bottom: 1.5rem; font-size: 0.88rem; }}
+  .scope-in {{ background: #eaf5ea; border: 1px solid #b6ddb6; color: #1a3d1a; }}
+  .scope-out {{ background: #fdecea; border: 1px solid #f3b8b1; color: #5c1a14; }}
+  .scope-box strong {{ display: block; margin-bottom: 0.2rem; }}
 </style>
 </head>
 <body>
 <h1>{company_name} ({ticker})</h1>
 <div class="subtitle">CIK {cik} — most recent fiscal year end {fy_end} — {source_link}</div>
+
+<div class="scope-box {scope_box_class}">{scope_html}</div>
 
 <h2>Current-Year Metrics</h2>
 <table>
@@ -268,6 +376,23 @@ def confidence_badge(status):
 
 def esc(text):
     return html.escape(str(text))
+
+
+def scope_html_block(report):
+    current = report["current"]
+    sic = current["sic"]
+    sic_desc = current["sic_description"] or "(no SIC description on file)"
+    if report["in_scope"]:
+        return "scope-in", (
+            f"<strong>SCOPE: IN — SIC {esc(sic)} ({esc(sic_desc)})</strong>"
+            f"Detected sector: {esc(report['sector_label'])} ({esc(report['sic_band_description'])}). "
+            "This ticker is in the validated TMT/Industrials scope."
+        )
+    caution = OUT_OF_SCOPE_CAUTION.format(sic=sic)
+    return "scope-out", (
+        f"<strong>SCOPE: OUT OF SCOPE — SIC {esc(sic)} ({esc(sic_desc)})</strong>"
+        f"{esc(caution)}"
+    )
 
 
 def metrics_table_rows(metrics):
@@ -318,24 +443,14 @@ def signal_html(label, value, note=None):
     return block
 
 
-def write_html(report, path):
-    ticker = report["ticker"]
-    current = report["current"]
-
-    metrics_rows = metrics_table_rows(current["metrics"])
-    year_headers, trajectory_rows = trajectory_table(report["trajectory"])
-
+def verdict_html_block(report):
+    """(verdict_line, signals_html, caveats_html) — or an explanatory
+    stand-in for all three when the verdict couldn't be computed (see the
+    guard in analyze(), gated on the same unresolved-operating-margin
+    condition)."""
     verdict = report["verdict"]
-
-    peer_note = (
-        "Benchmarked against this tool's peer group (VRT, ETN, PWR, NVT)."
-        if report["is_peer"]
-        else (
-            f"Benchmarked against this tool's peer group (VRT, ETN, PWR, NVT) — {esc(ticker)} is outside that "
-            "four-company coverage set, so treat the margin-spread signal below as directional only, not "
-            "an apples-to-apples industry comparison."
-        )
-    )
+    if verdict is None:
+        return esc(report["verdict_console_text"].strip()), "", ""
 
     signals = []
     signals.append(
@@ -366,17 +481,43 @@ def write_html(report, path):
         items = "\n".join(f"<li>{esc(c)}</li>" for c in verdict["caveats"])
         caveats_html = f'<ul class="caveats">{items}</ul>'
 
+    return esc(verdict["verdict_line"]), signals_html, caveats_html
+
+
+def write_html(report, path):
+    ticker = report["ticker"]
+    current = report["current"]
+
+    metrics_rows = metrics_table_rows(current["metrics"])
+    year_headers, trajectory_rows = trajectory_table(report["trajectory"])
+
+    peer_note = (
+        "Benchmarked against this tool's peer group (VRT, ETN, PWR, NVT)."
+        if report["is_peer"]
+        else (
+            f"Benchmarked against this tool's peer group (VRT, ETN, PWR, NVT) — {esc(ticker)} is outside that "
+            "four-company coverage set, so treat the margin-spread signal below as directional only, not "
+            "an apples-to-apples industry comparison."
+        )
+    )
+
+    verdict_line, signals_html, caveats_html = verdict_html_block(report)
+
+    scope_box_class, scope_html = scope_html_block(report)
+
     page_html = HTML_TEMPLATE.format(
         ticker=esc(ticker),
         company_name=esc(current["company_name"]),
         cik=esc(current["cik"]),
         fy_end=esc(current["authoritative_fiscal_year_end"]),
         source_link=f'<a href="{esc(report["filing_source_url"])}">source 10-K</a>',
+        scope_box_class=scope_box_class,
+        scope_html=scope_html,
         metrics_rows=metrics_rows,
         trajectory_year_headers=year_headers,
         trajectory_rows=trajectory_rows,
         peer_note=peer_note,
-        verdict_line=esc(verdict["verdict_line"]),
+        verdict_line=verdict_line,
         signals_html=signals_html,
         caveats_html=caveats_html,
     )

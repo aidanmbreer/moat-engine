@@ -125,6 +125,12 @@ def resolve_ticker(ticker):
         "fiscal_year_end": fiscal_year_end,
         "document_url": document_url,
         "document_size_bytes": len(doc_resp.content),
+        # SIC (Standard Industrial Classification) is self-reported by the
+        # filer, straight from the same submissions payload already fetched
+        # above — no extra request. Purely additive: existing callers/keys
+        # unaffected. Used by analyze.py's scope declaration.
+        "sic": submissions.get("sic"),
+        "sic_description": submissions.get("sicDescription"),
     }
 
 
