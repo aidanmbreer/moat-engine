@@ -159,16 +159,36 @@ def gather_ticker_trajectory(ticker, us_gaap):
             series["interest_coverage"].append((year_label, None, "unresolved"))
             print(f"[{ticker} FY{year_label}] credit metrics UNRESOLVED: {e}\n")
         else:
-            debt_ebitda_conf = classify_confidence([credit["margins_flags"], credit["da_flags"]])
-            net_debt_ebitda_conf = classify_confidence(
-                [credit["margins_flags"], credit["da_flags"], credit["cash_flags"]]
-            )
-            interest_coverage_conf = classify_confidence(
-                [credit["margins_flags"], credit["da_flags"], credit["interest_flags"]]
-            )
-            series["debt_ebitda"].append((year_label, credit["leverage"], debt_ebitda_conf))
-            series["net_debt_ebitda"].append((year_label, credit["net_leverage"], net_debt_ebitda_conf))
-            series["interest_coverage"].append((year_label, credit["interest_coverage"], interest_coverage_conf))
+            # Each of the three credit metrics resolves off only its own
+            # inputs (see compute_credit_metrics docstring) — a failure on
+            # one (e.g. interest expense) must not mark the other two
+            # unresolved when their own inputs resolved fine.
+            if credit["leverage"] is None:
+                series["debt_ebitda"].append((year_label, None, "unresolved"))
+                print(f"[{ticker} FY{year_label}] debt/EBITDA UNRESOLVED: {credit['leverage_error']}\n")
+            else:
+                debt_ebitda_conf = classify_confidence([credit["margins_flags"], credit["da_flags"]])
+                series["debt_ebitda"].append((year_label, credit["leverage"], debt_ebitda_conf))
+
+            if credit["net_leverage"] is None:
+                series["net_debt_ebitda"].append((year_label, None, "unresolved"))
+                print(f"[{ticker} FY{year_label}] net debt/EBITDA UNRESOLVED: {credit['net_leverage_error']}\n")
+            else:
+                net_debt_ebitda_conf = classify_confidence(
+                    [credit["margins_flags"], credit["da_flags"], credit["cash_flags"]]
+                )
+                series["net_debt_ebitda"].append((year_label, credit["net_leverage"], net_debt_ebitda_conf))
+
+            if credit["interest_coverage"] is None:
+                series["interest_coverage"].append((year_label, None, "unresolved"))
+                print(f"[{ticker} FY{year_label}] interest coverage UNRESOLVED: {credit['interest_coverage_error']}\n")
+            else:
+                interest_coverage_conf = classify_confidence(
+                    [credit["margins_flags"], credit["da_flags"], credit["interest_flags"]]
+                )
+                series["interest_coverage"].append(
+                    (year_label, credit["interest_coverage"], interest_coverage_conf)
+                )
 
     return series
 

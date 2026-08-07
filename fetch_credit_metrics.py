@@ -31,6 +31,13 @@ Definitions:
   overstates nVent's coverage ratio relative to a gross-expense basis.
 - Total debt / EBITDA (leverage), Net debt / EBITDA, and
   EBITDA / Interest expense (coverage) follow directly from the above.
+  Each resolves independently against only its own inputs (debt/EBITDA:
+  debt + EBITDA; net debt/EBITDA: debt + cash + EBITDA; interest
+  coverage: EBITDA + interest expense) — a failure to resolve debt,
+  cash, or interest expense only marks the metric(s) that actually
+  depend on that input as unresolved, not all three. EBITDA (operating
+  income + D&A) is a genuine shared dependency of all three, so a
+  failure there still fails the whole function.
 
 SEC EDGAR requires a descriptive User-Agent on every request and asks
 that callers stay under 10 requests/second. This script makes at most
@@ -138,7 +145,20 @@ def compute_credit_metrics(ticker, us_gaap, fiscal_year_end=None):
     behavior, unchanged) — the value simply passes through to
     fetch_margins.compute_margins(), which resolves it. Given an explicit
     period end, runs the same debt/cash/D&A/interest resolution against
-    that year instead — used for multi-year pulls."""
+    that year instead — used for multi-year pulls.
+
+    Debt/EBITDA, net debt/EBITDA, and interest coverage resolve
+    independently, each against only its own inputs:
+      - debt/EBITDA needs debt + EBITDA
+      - net debt/EBITDA needs debt + cash + EBITDA
+      - interest coverage needs EBITDA + interest expense
+    EBITDA itself (operating income + D&A) is a genuine shared
+    dependency of all three, so a failure to resolve operating income or
+    D&A still fails the whole function — that's not collateral damage,
+    it's a real shared input. But a failure to resolve debt, cash, or
+    interest expense only takes down the metric(s) that actually depend
+    on that input; it must not mark the other metrics unresolved too.
+    """
     flags = []
 
     margins = fetch_margins.compute_margins(ticker, us_gaap, fiscal_year_end=fiscal_year_end)
@@ -146,48 +166,106 @@ def compute_credit_metrics(ticker, us_gaap, fiscal_year_end=None):
     fiscal_year = margins["fiscal_year"]
     operating_income = margins["operating_income"]
 
-    debt = fetch_roic_others.total_debt_for_roic(us_gaap, fiscal_year_end)
-    total_debt = debt["total"]
-
-    cash, cash_tag, cash_note = cash_and_equivalents(us_gaap, fiscal_year_end)
-    cash_flags = []
-    if cash_note:
-        cash_flags.append(f"{cash_tag} used instead of CashAndCashEquivalentsAtCarryingValue — {cash_note}")
-        flags.extend(cash_flags)
-
     da_value, da_tag, da_flags = depreciation_and_amortization(ticker, us_gaap, fiscal_year_end)
-    flags.extend(da_flags)
+    ebitda = operating_income + da_value
 
-    interest_value, interest_tag, interest_flags = interest_expense(ticker, us_gaap, fiscal_year_end)
+    debt = None
+    total_debt = None
+    debt_error = None
+    try:
+        debt = fetch_roic_others.total_debt_for_roic(us_gaap, fiscal_year_end)
+        total_debt = debt["total"]
+    except RuntimeError as e:
+        debt_error = str(e)
+
+    cash = cash_tag = cash_note = None
+    cash_flags = []
+    cash_error = None
+    try:
+        cash, cash_tag, cash_note = cash_and_equivalents(us_gaap, fiscal_year_end)
+        if cash_note:
+            cash_flags.append(f"{cash_tag} used instead of CashAndCashEquivalentsAtCarryingValue — {cash_note}")
+    except RuntimeError as e:
+        cash_error = str(e)
+
+    interest_value = interest_tag = None
+    interest_flags = []
+    interest_error = None
+    try:
+        interest_value, interest_tag, interest_flags = interest_expense(ticker, us_gaap, fiscal_year_end)
+    except RuntimeError as e:
+        interest_error = str(e)
+
+    # Top-level "flags" preserves the original ordering (cash, then D&A,
+    # then interest) regardless of the try/except structure above.
+    flags.extend(cash_flags)
+    flags.extend(da_flags)
     flags.extend(interest_flags)
 
-    ebitda = operating_income + da_value
-    net_debt = total_debt - cash
+    if debt_error is None:
+        leverage = total_debt / ebitda
+        leverage_error = None
+    else:
+        leverage = None
+        leverage_error = debt_error
 
-    leverage = total_debt / ebitda
-    net_leverage = net_debt / ebitda
-    interest_coverage = ebitda / interest_value
+    if debt_error is None and cash_error is None:
+        net_debt = total_debt - cash
+        net_leverage = net_debt / ebitda
+        net_leverage_error = None
+    else:
+        net_debt = None
+        net_leverage = None
+        net_leverage_error = " ; ".join(e for e in (debt_error, cash_error) if e)
+
+    if interest_error is None:
+        interest_coverage = ebitda / interest_value
+        interest_coverage_error = None
+    else:
+        interest_coverage = None
+        interest_coverage_error = interest_error
 
     print(f"Fiscal year: FY{fiscal_year} (ended {fiscal_year_end})")
     print(f"Operating income: ${operating_income:,}")
     print(f"D&A [{da_tag}]: ${da_value:,}")
     print(f"EBITDA (operating income + D&A): ${ebitda:,}")
-    print(
-        "Total debt: "
-        f"${total_debt:,} "
-        f"(current debt [{debt['current_debt_tag']}] ${debt['current_debt']:,} "
-        f"+ noncurrent debt [{debt['noncurrent_debt_tag']}] ${debt['noncurrent_debt']:,} "
-        f"+ operating lease liability (noncurrent) ${debt['operating_lease_liability_noncurrent']:,} "
-        f"+ finance lease liability (noncurrent) ${debt['finance_lease_liability_noncurrent']:,}"
-        + (f" [{debt['finance_lease_note']}]" if debt["finance_lease_note"] else "")
-        + ")"
-    )
-    print(f"Cash and equivalents [{cash_tag}]: ${cash:,}")
-    print(f"Net debt (total debt - cash): ${net_debt:,}")
-    print(f"Interest expense [{interest_tag}]: ${interest_value:,}")
-    print(f"Total debt / EBITDA: {leverage:.2f}x")
-    print(f"Net debt / EBITDA: {net_leverage:.2f}x")
-    print(f"EBITDA / Interest expense: {interest_coverage:.2f}x")
+    if debt_error is None:
+        print(
+            "Total debt: "
+            f"${total_debt:,} "
+            f"(current debt [{debt['current_debt_tag']}] ${debt['current_debt']:,} "
+            f"+ noncurrent debt [{debt['noncurrent_debt_tag']}] ${debt['noncurrent_debt']:,} "
+            f"+ operating lease liability (noncurrent) ${debt['operating_lease_liability_noncurrent']:,} "
+            f"+ finance lease liability (noncurrent) ${debt['finance_lease_liability_noncurrent']:,}"
+            + (f" [{debt['finance_lease_note']}]" if debt["finance_lease_note"] else "")
+            + ")"
+        )
+    else:
+        print(f"Total debt: UNRESOLVED — {debt_error}")
+    if cash_error is None:
+        print(f"Cash and equivalents [{cash_tag}]: ${cash:,}")
+    else:
+        print(f"Cash and equivalents: UNRESOLVED — {cash_error}")
+    if net_leverage_error is None:
+        print(f"Net debt (total debt - cash): ${net_debt:,}")
+    else:
+        print(f"Net debt (total debt - cash): UNRESOLVED — {net_leverage_error}")
+    if interest_error is None:
+        print(f"Interest expense [{interest_tag}]: ${interest_value:,}")
+    else:
+        print(f"Interest expense: UNRESOLVED — {interest_error}")
+    if leverage_error is None:
+        print(f"Total debt / EBITDA: {leverage:.2f}x")
+    else:
+        print(f"Total debt / EBITDA: UNRESOLVED — {leverage_error}")
+    if net_leverage_error is None:
+        print(f"Net debt / EBITDA: {net_leverage:.2f}x")
+    else:
+        print(f"Net debt / EBITDA: UNRESOLVED — {net_leverage_error}")
+    if interest_coverage_error is None:
+        print(f"EBITDA / Interest expense: {interest_coverage:.2f}x")
+    else:
+        print(f"EBITDA / Interest expense: UNRESOLVED — {interest_coverage_error}")
     for flag in flags:
         print(f"FLAG: {flag}")
     print()
@@ -201,13 +279,19 @@ def compute_credit_metrics(ticker, us_gaap, fiscal_year_end=None):
         "da_tag": da_tag,
         "ebitda": ebitda,
         "total_debt": total_debt,
+        "debt_error": debt_error,
         "cash": cash,
+        "cash_error": cash_error,
         "net_debt": net_debt,
         "interest_expense": interest_value,
         "interest_expense_tag": interest_tag,
+        "interest_error": interest_error,
         "leverage": leverage,
+        "leverage_error": leverage_error,
         "net_leverage": net_leverage,
+        "net_leverage_error": net_leverage_error,
         "interest_coverage": interest_coverage,
+        "interest_coverage_error": interest_coverage_error,
         "flags": flags,
         "margins_flags": margins["flags"],
         "da_flags": da_flags,

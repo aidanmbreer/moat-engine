@@ -30,23 +30,15 @@ Confidence, per metric, in priority order:
      do for the four known companies.
 
 Standalone — does not modify fetch_margins.py, fetch_roic_others.py,
-fetch_credit_metrics.py, fetch_trajectory.py, fetch_verdict.py,
-consolidate.py, or resolve_ticker.py, and does not touch any existing
-TICKERS list. Only reads their already-fixed, already-verified logic.
-
-KNOWN LIMITATION, found testing on HON: fetch_credit_metrics.compute_
-credit_metrics() resolves debt, cash, D&A, and interest expense in one
-function and raises on the first one that fails — it does not report
-partial results. So if only interest-expense resolution fails (as it
-does for HON, which tags it as InterestAndDebtExpense, not currently a
-candidate), debt/EBITDA and net debt/EBITDA come back UNRESOLVED here
-too, even though their own inputs (debt, D&A) resolved fine and only
-interest coverage actually needed the failing tag. That's collateral
-unresolved, not genuinely unresolvable — distinct from a case like CAT,
-where the debt tag itself has no match among any candidate. Fixing
-this means restructuring compute_credit_metrics() to resolve each
-sub-metric independently, which touches the shared four-company
-pipeline and is out of scope for this slice; left as a follow-up.
+fetch_trajectory.py, fetch_verdict.py, consolidate.py, or
+resolve_ticker.py, and does not touch any existing TICKERS list. Only
+reads their already-fixed, already-verified logic. It does read
+fetch_credit_metrics.compute_credit_metrics()'s per-metric resolution
+(debt/EBITDA, net debt/EBITDA, and interest coverage each resolve off
+only their own inputs — see that function's docstring) so that a
+failure on one input (e.g. HON's interest expense, tagged as
+InterestAndDebtExpense, not currently a candidate) reports UNRESOLVED
+only for the metric(s) that actually need it, not all three.
 """
 
 import fetch_credit_metrics
@@ -140,40 +132,55 @@ def full_metrics_for_ticker(ticker):
         }
 
     # --- credit metrics ---
+    # debt/EBITDA, net debt/EBITDA, and interest coverage each resolve
+    # off only their own inputs (see compute_credit_metrics docstring),
+    # so a failure on one input (e.g. HON's interest expense) is checked
+    # and reported per metric, not for all three at once.
     try:
         credit = fetch_credit_metrics.compute_credit_metrics(ticker_norm, us_gaap)
     except Exception as e:
         for m in ("debt_ebitda", "net_debt_ebitda", "interest_coverage"):
             metrics[m] = {"status": "unresolved", "reason": str(e)}
     else:
-        de_baseline = fetch_trajectory.classify_confidence([credit["margins_flags"], credit["da_flags"]])
-        nde_baseline = fetch_trajectory.classify_confidence(
-            [credit["margins_flags"], credit["da_flags"], credit["cash_flags"]]
-        )
-        ic_baseline = fetch_trajectory.classify_confidence(
-            [credit["margins_flags"], credit["da_flags"], credit["interest_flags"]]
-        )
-        metrics["debt_ebitda"] = {
-            "status": confidence_for_metric(credit["fiscal_year_end"], authoritative_fy_end, de_baseline),
-            "value": credit["leverage"],
-            "tag": f"total debt (see trace) / D&A[{credit['da_tag']}]",
-            "fiscal_year_end": credit["fiscal_year_end"],
-            "flags": credit["margins_flags"] + credit["da_flags"],
-        }
-        metrics["net_debt_ebitda"] = {
-            "status": confidence_for_metric(credit["fiscal_year_end"], authoritative_fy_end, nde_baseline),
-            "value": credit["net_leverage"],
-            "tag": "total debt / cash (see trace) / D&A[{}]".format(credit["da_tag"]),
-            "fiscal_year_end": credit["fiscal_year_end"],
-            "flags": credit["margins_flags"] + credit["da_flags"] + credit["cash_flags"],
-        }
-        metrics["interest_coverage"] = {
-            "status": confidence_for_metric(credit["fiscal_year_end"], authoritative_fy_end, ic_baseline),
-            "value": credit["interest_coverage"],
-            "tag": f"Interest[{credit['interest_expense_tag']}] / D&A[{credit['da_tag']}]",
-            "fiscal_year_end": credit["fiscal_year_end"],
-            "flags": credit["margins_flags"] + credit["da_flags"] + credit["interest_flags"],
-        }
+        if credit["leverage"] is None:
+            metrics["debt_ebitda"] = {"status": "unresolved", "reason": credit["leverage_error"]}
+        else:
+            de_baseline = fetch_trajectory.classify_confidence([credit["margins_flags"], credit["da_flags"]])
+            metrics["debt_ebitda"] = {
+                "status": confidence_for_metric(credit["fiscal_year_end"], authoritative_fy_end, de_baseline),
+                "value": credit["leverage"],
+                "tag": f"total debt (see trace) / D&A[{credit['da_tag']}]",
+                "fiscal_year_end": credit["fiscal_year_end"],
+                "flags": credit["margins_flags"] + credit["da_flags"],
+            }
+
+        if credit["net_leverage"] is None:
+            metrics["net_debt_ebitda"] = {"status": "unresolved", "reason": credit["net_leverage_error"]}
+        else:
+            nde_baseline = fetch_trajectory.classify_confidence(
+                [credit["margins_flags"], credit["da_flags"], credit["cash_flags"]]
+            )
+            metrics["net_debt_ebitda"] = {
+                "status": confidence_for_metric(credit["fiscal_year_end"], authoritative_fy_end, nde_baseline),
+                "value": credit["net_leverage"],
+                "tag": "total debt / cash (see trace) / D&A[{}]".format(credit["da_tag"]),
+                "fiscal_year_end": credit["fiscal_year_end"],
+                "flags": credit["margins_flags"] + credit["da_flags"] + credit["cash_flags"],
+            }
+
+        if credit["interest_coverage"] is None:
+            metrics["interest_coverage"] = {"status": "unresolved", "reason": credit["interest_coverage_error"]}
+        else:
+            ic_baseline = fetch_trajectory.classify_confidence(
+                [credit["margins_flags"], credit["da_flags"], credit["interest_flags"]]
+            )
+            metrics["interest_coverage"] = {
+                "status": confidence_for_metric(credit["fiscal_year_end"], authoritative_fy_end, ic_baseline),
+                "value": credit["interest_coverage"],
+                "tag": f"Interest[{credit['interest_expense_tag']}] / D&A[{credit['da_tag']}]",
+                "fiscal_year_end": credit["fiscal_year_end"],
+                "flags": credit["margins_flags"] + credit["da_flags"] + credit["interest_flags"],
+            }
 
     return {
         "status": "ok",
