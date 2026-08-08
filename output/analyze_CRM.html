@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CRM — Analysis</title>
+<style>
+  body { font-family: -apple-system, Segoe UI, Helvetica, Arial, sans-serif; margin: 2rem; color: #1a1a1a; background: #fff; }
+  h1 { font-size: 1.4rem; margin-bottom: 0.1rem; }
+  h2 { font-size: 1.05rem; margin-top: 2rem; margin-bottom: 0.6rem; border-bottom: 2px solid #1f4e78; padding-bottom: 0.2rem; }
+  .subtitle { color: #555; margin-bottom: 1.5rem; font-size: 0.9rem; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.88rem; margin-bottom: 1rem; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: right; }
+  th { background: #1f4e78; color: #fff; text-align: center; }
+  td:first-child, th:first-child { text-align: left; font-weight: 600; }
+  tr:nth-child(even) td { background: #f7f9fb; }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 0.78rem; font-weight: 600; color: #fff; }
+  .flags { text-align: left; font-size: 0.78rem; color: #555; margin-top: 2px; }
+  .verdict-box { background: #f2f6fa; border: 1px solid #ccd9e6; border-radius: 6px; padding: 1rem 1.2rem; }
+  .verdict-line { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.6rem; }
+  .signal { margin-bottom: 0.5rem; }
+  .signal .label { font-weight: 600; }
+  .caveats { margin-top: 0.8rem; font-size: 0.85rem; color: #7a4a00; }
+  .caveats li { margin-bottom: 0.3rem; }
+  .peer-note { font-size: 0.85rem; color: #666; margin-bottom: 0.8rem; }
+  .footnote { margin-top: 2rem; font-size: 0.8rem; color: #666; max-width: 800px; }
+  .scope-box { border-radius: 6px; padding: 0.8rem 1.1rem; margin-bottom: 1.5rem; font-size: 0.88rem; }
+  .scope-in { background: #eaf5ea; border: 1px solid #b6ddb6; color: #1a3d1a; }
+  .scope-out { background: #fdecea; border: 1px solid #f3b8b1; color: #5c1a14; }
+  .scope-box strong { display: block; margin-bottom: 0.2rem; }
+</style>
+</head>
+<body>
+<h1>Salesforce, Inc. (CRM)</h1>
+<div class="subtitle">CIK 0001108524 — most recent fiscal year end 2026-01-31 — <a href="https://www.sec.gov/Archives/edgar/data/1108524/000110852426000060/crm-20260131.htm">source 10-K</a></div>
+
+<div class="scope-box scope-in"><strong>SCOPE: IN — SIC 7372 (Services-Prepackaged Software)</strong>Detected sector: TMT (Computer services (software, data processing)). This ticker is in the validated TMT/Industrials scope.</div>
+
+<h2>Current-Year Metrics</h2>
+<table>
+<thead><tr><th>Metric</th><th>Value</th><th>Confidence</th><th>Tag / Method</th></tr></thead>
+<tbody>
+<tr><td>Gross Margin</td><td>77.68%</td><td><span class="badge" style="background:#0a6b0a">CLEAN</span></td><td>RevenueFromContractWithCustomerExcludingAssessedTax / CostOfGoodsAndServicesSold</td></tr>
+<tr><td>Operating Margin</td><td>20.06%</td><td><span class="badge" style="background:#0a6b0a">CLEAN</span></td><td>OperatingIncomeLoss</td></tr>
+<tr><td>ROIC</td><td>9.50%</td><td><span class="badge" style="background:#0a6b0a">CLEAN</span></td><td>NOPAT / invested capital (operating income, tax, debt, equity, cash tags — see flags/trace above)</td></tr>
+<tr><td>Debt / EBITDA</td><td>1.77x</td><td><span class="badge" style="background:#0a6b0a">CLEAN</span></td><td>total debt (see trace) / D&amp;A[DepreciationDepletionAndAmortization]</td></tr>
+<tr><td>Net Debt / EBITDA</td><td>1.00x</td><td><span class="badge" style="background:#0a6b0a">CLEAN</span></td><td>total debt / cash (see trace) / D&amp;A[DepreciationDepletionAndAmortization]</td></tr>
+<tr><td>Interest Coverage (EBITDA / Interest)</td><td>29.42x</td><td><span class="badge" style="background:#0a6b0a">CLEAN</span></td><td>Interest[InterestExpenseDebt] / D&amp;A[DepreciationDepletionAndAmortization]</td></tr>
+</tbody>
+</table>
+
+<h2>5-Year Trajectory</h2>
+<table>
+<thead><tr><th>Metric</th><th>FY2022</th><th>FY2023</th><th>FY2024</th><th>FY2025</th><th>FY2026</th><th>Direction</th></tr></thead>
+<tbody>
+<tr><td>Gross Margin</td><td>73.48%<div class="flags">[clean]</div></td><td>73.34%<div class="flags">[clean]</div></td><td>75.50%<div class="flags">[clean]</div></td><td>77.19%<div class="flags">[clean]</div></td><td>77.68%<div class="flags">[clean]</div></td><td>rising</td></tr>
+<tr><td>Operating Margin</td><td>2.07%<div class="flags">[clean]</div></td><td>3.29%<div class="flags">[clean]</div></td><td>14.38%<div class="flags">[clean]</div></td><td>19.01%<div class="flags">[clean]</div></td><td>20.06%<div class="flags">[clean]</div></td><td>rising</td></tr>
+<tr><td>ROIC</td><td>0.78%<div class="flags">[clean]</div></td><td>0.50%<div class="flags">[clean]</div></td><td>6.56%<div class="flags">[clean]</div></td><td>9.46%<div class="flags">[clean]</div></td><td>9.50%<div class="flags">[clean]</div></td><td>rising</td></tr>
+<tr><td>Debt / EBITDA</td><td>11.07x<div class="flags">[clean]</div></td><td>7.26x<div class="flags">[clean]</div></td><td>2.07x<div class="flags">[clean]</div></td><td>1.36x<div class="flags">[clean]</div></td><td>1.77x<div class="flags">[clean]</div></td><td>falling</td></tr>
+<tr><td>Net Debt / EBITDA</td><td>6.61x<div class="flags">[clean]</div></td><td>3.63x<div class="flags">[clean]</div></td><td>0.69x<div class="flags">[clean]</div></td><td>0.28x<div class="flags">[clean]</div></td><td>1.00x<div class="flags">[clean]</div></td><td>falling</td></tr>
+<tr><td>Interest Coverage (EBITDA / Interest)</td><td>5.68x<div class="flags">[clean]</div></td><td>6.74x<div class="flags">[clean]</div></td><td>21.59x<div class="flags">[clean]</div></td><td>30.17x<div class="flags">[clean]</div></td><td>29.42x<div class="flags">[clean]</div></td><td>rising</td></tr>
+</tbody>
+</table>
+
+<h2>Verdict</h2>
+<div class="peer-note">Benchmarked against this tool's peer group (VRT, ETN, PWR, NVT) — CRM is outside that four-company coverage set, so treat the margin-spread signal below as directional only, not an apples-to-apples industry comparison.</div>
+<div class="verdict-box">
+<div class="verdict-line">Widening moat, unverified margin, leverage easing, coverage improving.</div>
+<div class="signal"><span class="label">Moat direction:</span> WIDENING (ROIC rising, gross-margin spread rising, operating-margin spread rising)</div>
+<div class="signal"><span class="label">Margin quality / durability:</span> UNVERIFIED — Operating margin 20.06% is high, but customer concentration is not disclosed in the filing — durability can&#x27;t be assessed from public data.</div>
+<div class="signal"><span class="label">Credit direction:</span> leverage easing, coverage improving</div>
+
+</div>
+
+<div class="footnote">
+Every number above is computed by the existing, already-validated modules (fetch_margins.py, fetch_roic_others.py,
+fetch_credit_metrics.py, fetch_trajectory.py, fetch_verdict.py) — analyze.py only resolves the ticker, calls them,
+and assembles this one report; no metric is recomputed here.
+</div>
+</body>
+</html>

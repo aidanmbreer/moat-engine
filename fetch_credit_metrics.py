@@ -36,12 +36,25 @@ Definitions:
   no such line either — also flagged where it applies.
 - Interest expense: preferred tag is InterestExpense; several filers
   don't tag that for FY2025 (it went stale after an earlier year), so
-  InterestExpenseNonoperating is tried next. nVent doesn't tag either
-  for FY2025 — it dropped to reporting only InterestIncomeExpenseNet
-  starting FY2024 — so nVent's interest expense falls back to
-  |InterestIncomeExpenseNet|, which is interest expense NET of
-  interest income, not gross. That's flagged explicitly since it
-  overstates nVent's coverage ratio relative to a gross-expense basis.
+  InterestExpenseNonoperating is tried next (flagged fallback when
+  used — it's a real substitute-tag judgment call, since "nonoperating"
+  is a narrower/different classification than plain interest expense).
+  nVent doesn't tag either for FY2025 — it dropped to reporting only
+  InterestIncomeExpenseNet starting FY2024 — so nVent's interest
+  expense falls back to |InterestIncomeExpenseNet|, which is interest
+  expense NET of interest income, not gross. That's flagged explicitly
+  since it overstates nVent's coverage ratio relative to a
+  gross-expense basis. CRM (added after VRT/ETN/PWR/NVT) doesn't tag
+  any of the above at all — it discloses interest expense only in a
+  debt footnote, not on the income statement face — under
+  InterestExpenseDebt, a standard us-gaap element ("aggregate expense
+  for interest on debt for the period") verified gross (not netted;
+  InvestmentIncomeInterest is a separate tag) and used consistently by
+  CRM for 15 years. Unlike InterestExpenseNonoperating, this is treated
+  as economically equivalent to the primary InterestExpense tag, not a
+  substitute with a different scope — no fallback flag when it's used,
+  same treatment as the noncurrent-debt/pretax-income "verified-
+  equivalent, different name" candidates elsewhere in this pipeline.
 - Total debt / EBITDA (leverage), Net debt / EBITDA, and
   EBITDA / Interest expense (coverage) follow directly from the above.
   Each resolves independently against only its own inputs (debt/EBITDA:
@@ -66,7 +79,18 @@ import fetch_roic_others
 
 TICKERS = ["VRT", "ETN", "PWR", "NVT"]
 
-INTEREST_EXPENSE_TAG_CANDIDATES = ["InterestExpense", "InterestExpenseNonoperating"]
+# (tag, flag_if_used) — flag_if_used=True reproduces the existing "used X
+# instead" fallback note (InterestExpenseNonoperating is a narrower/
+# different classification, a real substitute-tag judgment call).
+# flag_if_used=False means verified economically equivalent to the primary
+# InterestExpense tag, not a substitute with a different scope — resolves
+# clean, same treatment CAT's pretax-income and ORCL's noncurrent-debt
+# fallbacks already get elsewhere in this pipeline.
+INTEREST_EXPENSE_TAG_CANDIDATES = [
+    ("InterestExpense", False),
+    ("InterestExpenseNonoperating", True),
+    ("InterestExpenseDebt", False),
+]
 
 
 def cash_and_equivalents(us_gaap, fiscal_year_end):
@@ -125,10 +149,10 @@ def depreciation_and_amortization(ticker, us_gaap, fiscal_year_end):
 
 def interest_expense(ticker, us_gaap, fiscal_year_end):
     flags = []
-    for tag in INTEREST_EXPENSE_TAG_CANDIDATES:
+    for tag, flag_if_used in INTEREST_EXPENSE_TAG_CANDIDATES:
         fact = fetch_roic_others.annual_duration_fact_at(us_gaap, tag, fiscal_year_end, required=False)
         if fact is not None:
-            if tag != INTEREST_EXPENSE_TAG_CANDIDATES[0]:
+            if flag_if_used:
                 flags.append(
                     f"InterestExpense tag not reported for FY ended {fiscal_year_end}; used {tag} instead."
                 )
@@ -138,7 +162,7 @@ def interest_expense(ticker, us_gaap, fiscal_year_end):
     if fact is not None:
         value = abs(fact["val"])
         flags.append(
-            f"No gross interest expense tag ({' / '.join(INTEREST_EXPENSE_TAG_CANDIDATES)}) reported for FY ended "
+            f"No gross interest expense tag ({' / '.join(tag for tag, _ in INTEREST_EXPENSE_TAG_CANDIDATES)}) reported for FY ended "
             f"{fiscal_year_end}; used |InterestIncomeExpenseNet| = ${value:,} instead. This is interest expense "
             "NET of interest income, not gross interest expense — EBITDA/interest coverage will read stronger than "
             "on a gross-expense basis. Hand-check against the filing's interest expense footnote."
