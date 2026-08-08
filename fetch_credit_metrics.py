@@ -33,7 +33,15 @@ Definitions:
   CAT's ShortTermBorrowings (Cat Financial commercial paper funding the
   lending book, not industrial debt) is intentionally excluded from
   total debt for consistency with the other four companies, which have
-  no such line either — also flagged where it applies.
+  no such line either — also flagged where it applies. LMT (added
+  after ORCL/CRM) similarly gets a PENSION_EXCLUDED debt_flags note:
+  its net pension liability (DefinedBenefitPensionPlanLiabilitiesNoncurrent)
+  is deliberately excluded from total debt, same methodology-consistency
+  choice as the other companies (none reflects a pension deficit in
+  total debt), with the note stating what pension-adjusted leverage
+  would look like instead — informational only, doesn't change the
+  confidence tier on its own (debt/EBITDA and net debt/EBITDA already
+  carry the D&A-derivation "derived" flag independently for LMT).
 - Interest expense: preferred tag is InterestExpense; several filers
   don't tag that for FY2025 (it went stale after an earlier year), so
   InterestExpenseNonoperating is tried next (flagged fallback when
@@ -240,6 +248,19 @@ def compute_credit_metrics(ticker, us_gaap, fiscal_year_end=None):
                 "industrial debt, and none of the four known companies' methodology includes a short-term-"
                 "borrowings line either."
             )
+        if ticker == "LMT":
+            pension_liability = fetch_roic_others.annual_instant_fact(
+                us_gaap, "DefinedBenefitPensionPlanLiabilitiesNoncurrent", fiscal_year_end, required=False
+            )
+            if pension_liability is not None and total_debt:
+                pension_pct = pension_liability["val"] / total_debt * 100
+                debt_flags.append(
+                    f"PENSION_EXCLUDED: LMT's net pension liability (DefinedBenefitPensionPlanLiabilitiesNoncurrent, "
+                    f"${pension_liability['val']:,} as of {fiscal_year_end}) is intentionally excluded from this "
+                    "total debt figure, consistent with how the other covered companies are treated (none reflects "
+                    f"a pension deficit in total debt either). Pension-adjusted leverage would be modestly higher — "
+                    f"this liability is ~{pension_pct:.0f}% of total debt as reported (${total_debt:,})."
+                )
     except RuntimeError as e:
         debt_error = str(e)
 

@@ -108,11 +108,13 @@ def full_metrics_for_ticker(ticker):
         if margins["gross_margin"] is None:
             metrics["gross_margin"] = {"status": "unresolved", "reason": margins["cost_of_revenue_error"]}
         else:
+            gm_baseline = fetch_trajectory.classify_confidence([margins["gross_margin_flags"]])
             metrics["gross_margin"] = {
-                "status": confidence_for_metric(margins["fiscal_year_end"], authoritative_fy_end, "clean"),
+                "status": confidence_for_metric(margins["fiscal_year_end"], authoritative_fy_end, gm_baseline),
                 "value": margins["gross_margin"],
                 "tag": f"{margins['revenue_tag']} / {margins['cost_of_revenue_tag']}",
                 "fiscal_year_end": margins["fiscal_year_end"],
+                "flags": margins["gross_margin_flags"],
             }
 
         if margins["operating_margin"] is None:

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LMT — Analysis</title>
+<style>
+  body { font-family: -apple-system, Segoe UI, Helvetica, Arial, sans-serif; margin: 2rem; color: #1a1a1a; background: #fff; }
+  h1 { font-size: 1.4rem; margin-bottom: 0.1rem; }
+  h2 { font-size: 1.05rem; margin-top: 2rem; margin-bottom: 0.6rem; border-bottom: 2px solid #1f4e78; padding-bottom: 0.2rem; }
+  .subtitle { color: #555; margin-bottom: 1.5rem; font-size: 0.9rem; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.88rem; margin-bottom: 1rem; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: right; }
+  th { background: #1f4e78; color: #fff; text-align: center; }
+  td:first-child, th:first-child { text-align: left; font-weight: 600; }
+  tr:nth-child(even) td { background: #f7f9fb; }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 0.78rem; font-weight: 600; color: #fff; }
+  .flags { text-align: left; font-size: 0.78rem; color: #555; margin-top: 2px; }
+  .verdict-box { background: #f2f6fa; border: 1px solid #ccd9e6; border-radius: 6px; padding: 1rem 1.2rem; }
+  .verdict-line { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.6rem; }
+  .signal { margin-bottom: 0.5rem; }
+  .signal .label { font-weight: 600; }
+  .caveats { margin-top: 0.8rem; font-size: 0.85rem; color: #7a4a00; }
+  .caveats li { margin-bottom: 0.3rem; }
+  .peer-note { font-size: 0.85rem; color: #666; margin-bottom: 0.8rem; }
+  .footnote { margin-top: 2rem; font-size: 0.8rem; color: #666; max-width: 800px; }
+  .scope-box { border-radius: 6px; padding: 0.8rem 1.1rem; margin-bottom: 1.5rem; font-size: 0.88rem; }
+  .scope-in { background: #eaf5ea; border: 1px solid #b6ddb6; color: #1a3d1a; }
+  .scope-out { background: #fdecea; border: 1px solid #f3b8b1; color: #5c1a14; }
+  .scope-box strong { display: block; margin-bottom: 0.2rem; }
+</style>
+</head>
+<body>
+<h1>LOCKHEED MARTIN CORP (LMT)</h1>
+<div class="subtitle">CIK 0000936468 — most recent fiscal year end 2025-12-31 — <a href="https://www.sec.gov/Archives/edgar/data/936468/000162828026004195/lmt-20251231.htm">source 10-K</a></div>
+
+<div class="scope-box scope-in"><strong>SCOPE: IN — SIC 3760 (Guided Missiles &amp; Space Vehicles &amp; Parts)</strong>Detected sector: Industrials (Transportation equipment (incl. aerospace/defense)). This ticker is in the validated TMT/Industrials scope.</div>
+
+<h2>Current-Year Metrics</h2>
+<table>
+<thead><tr><th>Metric</th><th>Value</th><th>Confidence</th><th>Tag / Method</th></tr></thead>
+<tbody>
+<tr><td>Gross Margin</td><td>10.15%</td><td><span class="badge" style="background:#b3261e">FALLBACK</span></td><td>Revenues / CostOfRevenue<div class='flags'>DEFINITION_VARIANCE: gross margin (10.15%) is within 2%pp of operating margin (10.30%) — cost of revenue likely includes SG&amp;A/R&amp;D rather than excluding them. This figure approximates operating margin and is NOT comparable to the gross margins of companies that report cost of revenue excluding SG&amp;A/R&amp;D.</div></td></tr>
+<tr><td>Operating Margin</td><td>10.30%</td><td><span class="badge" style="background:#0a6b0a">CLEAN</span></td><td>OperatingIncomeLoss</td></tr>
+<tr><td>ROIC</td><td>26.07%</td><td><span class="badge" style="background:#0a6b0a">CLEAN</span></td><td>NOPAT / invested capital (operating income, tax, debt, equity, cash tags — see flags/trace above)<div class='flags'>finance_lease_liability_noncurrent is $0 as of 2025-12-31 — hand-check the balance sheet.</div></td></tr>
+<tr><td>Debt / EBITDA</td><td>2.51x</td><td><span class="badge" style="background:#8a6d00">DERIVED</span></td><td>total debt (see trace) / D&amp;A[Depreciation + AmortizationOfIntangibleAssets (derived)]<div class='flags'>No combined DepreciationDepletionAndAmortization tag; D&amp;A derived as Depreciation ($1,000,000,000) + AmortizationOfIntangibleAssets ($254,000,000) = $1,254,000,000. Excludes finance-lease right-of-use asset amortization if separately tagged — hand-check against the cash flow statement.<br>PENSION_EXCLUDED: LMT&#x27;s net pension liability (DefinedBenefitPensionPlanLiabilitiesNoncurrent, $3,915,000,000 as of 2025-12-31) is intentionally excluded from this total debt figure, consistent with how the other covered companies are treated (none reflects a pension deficit in total debt either). Pension-adjusted leverage would be modestly higher — this liability is ~17% of total debt as reported ($22,525,000,000).</div></td></tr>
+<tr><td>Net Debt / EBITDA</td><td>2.05x</td><td><span class="badge" style="background:#8a6d00">DERIVED</span></td><td>total debt / cash (see trace) / D&amp;A[Depreciation + AmortizationOfIntangibleAssets (derived)]<div class='flags'>No combined DepreciationDepletionAndAmortization tag; D&amp;A derived as Depreciation ($1,000,000,000) + AmortizationOfIntangibleAssets ($254,000,000) = $1,254,000,000. Excludes finance-lease right-of-use asset amortization if separately tagged — hand-check against the cash flow statement.<br>PENSION_EXCLUDED: LMT&#x27;s net pension liability (DefinedBenefitPensionPlanLiabilitiesNoncurrent, $3,915,000,000 as of 2025-12-31) is intentionally excluded from this total debt figure, consistent with how the other covered companies are treated (none reflects a pension deficit in total debt either). Pension-adjusted leverage would be modestly higher — this liability is ~17% of total debt as reported ($22,525,000,000).</div></td></tr>
+<tr><td>Interest Coverage (EBITDA / Interest)</td><td>8.04x</td><td><span class="badge" style="background:#b3261e">FALLBACK</span></td><td>Interest[InterestExpenseNonoperating] / D&amp;A[Depreciation + AmortizationOfIntangibleAssets (derived)]<div class='flags'>No combined DepreciationDepletionAndAmortization tag; D&amp;A derived as Depreciation ($1,000,000,000) + AmortizationOfIntangibleAssets ($254,000,000) = $1,254,000,000. Excludes finance-lease right-of-use asset amortization if separately tagged — hand-check against the cash flow statement.<br>InterestExpense tag not reported for FY ended 2025-12-31; used InterestExpenseNonoperating instead.</div></td></tr>
+</tbody>
+</table>
+
+<h2>5-Year Trajectory</h2>
+<table>
+<thead><tr><th>Metric</th><th>FY2021</th><th>FY2022</th><th>FY2023</th><th>FY2024</th><th>FY2025</th><th>Direction</th></tr></thead>
+<tbody>
+<tr><td>Gross Margin</td><td>13.52%<div class="flags">[fallback]</div></td><td>12.56%<div class="flags">[fallback]</div></td><td>12.55%<div class="flags">[fallback]</div></td><td>9.75%<div class="flags">[fallback]</div></td><td>10.15%<div class="flags">[fallback]</div></td><td>falling</td></tr>
+<tr><td>Operating Margin</td><td>13.61%<div class="flags">[clean]</div></td><td>12.65%<div class="flags">[clean]</div></td><td>12.59%<div class="flags">[clean]</div></td><td>9.87%<div class="flags">[clean]</div></td><td>10.30%<div class="flags">[clean]</div></td><td>falling</td></tr>
+<tr><td>ROIC</td><td>37.91%<div class="flags">[clean]</div></td><td>30.90%<div class="flags">[clean]</div></td><td>30.65%<div class="flags">[clean]</div></td><td>24.11%<div class="flags">[clean]</div></td><td>26.07%<div class="flags">[clean]</div></td><td>falling</td></tr>
+<tr><td>Debt / EBITDA</td><td>1.24x<div class="flags">[derived]</div></td><td>1.73x<div class="flags">[derived]</div></td><td>1.89x<div class="flags">[derived]</div></td><td>2.57x<div class="flags">[derived]</div></td><td>2.51x<div class="flags">[derived]</div></td><td>rising</td></tr>
+<tr><td>Net Debt / EBITDA</td><td>0.89x<div class="flags">[derived]</div></td><td>1.46x<div class="flags">[derived]</div></td><td>1.74x<div class="flags">[derived]</div></td><td>2.26x<div class="flags">[derived]</div></td><td>2.05x<div class="flags">[derived]</div></td><td>rising</td></tr>
+<tr><td>Interest Coverage (EBITDA / Interest)</td><td>18.12x<div class="flags">[derived]</div></td><td>15.25x<div class="flags">[derived]</div></td><td>10.56x<div class="flags">[derived]</div></td><td>7.94x<div class="flags">[fallback]</div></td><td>8.04x<div class="flags">[fallback]</div></td><td>falling</td></tr>
+</tbody>
+</table>
+
+<h2>Verdict</h2>
+<div class="peer-note">Benchmarked against this tool's peer group (VRT, ETN, PWR, NVT) — LMT is outside that four-company coverage set, so treat the margin-spread signal below as directional only, not an apples-to-apples industry comparison.</div>
+<div class="verdict-box">
+<div class="verdict-line">Narrowing moat, low margin, leverage building, coverage deteriorating.</div>
+<div class="signal"><span class="label">Moat direction:</span> NARROWING (ROIC falling, gross-margin spread falling, operating-margin spread falling)</div>
+<div class="signal"><span class="label">Margin quality / durability:</span> LOW-MARGIN — Operating margin 10.30% is below the 15% threshold used for the durability framing; concentration is not disclosed for reference, but the fragile/durable question isn&#x27;t the binding constraint here.</div>
+<div class="signal"><span class="label">Credit direction:</span> leverage building, coverage deteriorating <span style="color:#7a4a00;font-size:0.85rem;">(Debt/EBITDA is derived (formula-based, not a single tagged subtotal) in every year shown — mechanically consistent, not itself a red flag.)</span></div>
+<ul class="caveats"><li>Interest coverage uses a fallback (substitute-tag) basis in FY2024, FY2025 — directional read only, hand-check those years.</li></ul>
+</div>
+
+<div class="footnote">
+Every number above is computed by the existing, already-validated modules (fetch_margins.py, fetch_roic_others.py,
+fetch_credit_metrics.py, fetch_trajectory.py, fetch_verdict.py) — analyze.py only resolves the ticker, calls them,
+and assembles this one report; no metric is recomputed here.
+</div>
+</body>
+</html>

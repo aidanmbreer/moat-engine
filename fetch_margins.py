@@ -19,6 +19,19 @@ Definitions:
   Eaton's ROIC in fetch_roic_others.py — and every other
   revenue/cost/expense tag found for that period is printed so the
   substitution can be checked by eye.
+- DEFINITION_VARIANCE (added for LMT, but a general check, not an
+  LMT-only rule): a filer's "cost of revenue" tag can resolve cleanly
+  and still be economically different from the other filers' — LMT
+  tags its entire cost base (SG&A/R&D bundled in, no separate SG&A/R&D
+  line at all) under CostOfRevenue, so its "gross margin" comes out
+  nearly identical to its operating margin. When gross margin and
+  operating margin land within
+  GROSS_MARGIN_DEFINITION_VARIANCE_THRESHOLD (2pp) of each other, gross
+  margin is flagged DEFINITION_VARIANCE rather than reported clean —
+  the value is kept (faithful to the filer's own "gross profit"
+  presentation), but the flag makes the non-comparability explicit.
+  Every other company checked so far clears this threshold by several
+  points, so the check doesn't fire for them.
 
 SEC EDGAR requires a descriptive User-Agent on every request and asks
 that callers stay under 10 requests/second. This script makes at most
@@ -37,6 +50,18 @@ calls_made = 0
 
 REVENUE_TAGS = ["RevenueFromContractWithCustomerExcludingAssessedTax", "Revenues"]
 COST_OF_REVENUE_TAG_CANDIDATES = ["CostOfRevenue", "CostOfGoodsAndServicesSold"]
+
+# General check, not a per-company hardcode: some filers (LMT confirmed) tag
+# a "cost of revenue" figure that's economically their entire cost base
+# (SG&A and R&D bundled in, not broken out separately on the face of the
+# statement) rather than cost-of-goods-sold-only. That produces a "gross
+# margin" nearly identical to operating margin — for every company checked
+# so far with a genuine COGS-only cost-of-revenue tag, the gap is at least
+# several points (PWR has the narrowest at ~9.4pp); LMT's gap is 0.15pp.
+# 2 percentage points comfortably separates the two cases without being so
+# tight it could misfire on a low-SG&A company that's still genuinely
+# COGS-only.
+GROSS_MARGIN_DEFINITION_VARIANCE_THRESHOLD = 0.02
 
 
 def recent_fiscal_year_ends(us_gaap, count=5):
@@ -312,6 +337,23 @@ def compute_margins(ticker, us_gaap, fiscal_year_end=None):
     else:
         operating_margin = None
 
+    # DEFINITION_VARIANCE: the cost-of-revenue tag resolved (no error), but
+    # gross margin and operating margin land almost on top of each other —
+    # a sign the "cost of revenue" figure is this filer's entire cost base
+    # (SG&A/R&D included), not COGS-only. Kept separate from the general
+    # "flags" list (which drives operating margin's own confidence) so this
+    # doesn't affect operating margin's confidence — only gross margin's.
+    gross_margin_flags = []
+    if gross_margin is not None and operating_margin is not None:
+        if abs(gross_margin - operating_margin) < GROSS_MARGIN_DEFINITION_VARIANCE_THRESHOLD:
+            gross_margin_flags.append(
+                f"DEFINITION_VARIANCE: gross margin ({gross_margin:.2%}) is within "
+                f"{GROSS_MARGIN_DEFINITION_VARIANCE_THRESHOLD:.0%}pp of operating margin ({operating_margin:.2%}) — "
+                f"cost of revenue likely includes SG&A/R&D rather than excluding them. This figure approximates "
+                "operating margin and is NOT comparable to the gross margins of companies that report cost of "
+                "revenue excluding SG&A/R&D."
+            )
+
     print(f"Fiscal year: FY{fiscal_year} (ended {fiscal_year_end})")
     print(f"Revenue [{revenue_tag}]: ${revenue:,}")
     if cost_of_revenue_error is None:
@@ -330,6 +372,8 @@ def compute_margins(ticker, us_gaap, fiscal_year_end=None):
         print("Operating margin: UNRESOLVED")
     for flag in flags:
         print(f"FLAG: {flag}")
+    for flag in gross_margin_flags:
+        print(f"FLAG: {flag}")
     print()
 
     return {
@@ -343,6 +387,7 @@ def compute_margins(ticker, us_gaap, fiscal_year_end=None):
         "cost_of_revenue_error": cost_of_revenue_error,
         "gross_profit": gross_profit,
         "gross_margin": gross_margin,
+        "gross_margin_flags": gross_margin_flags,
         "operating_income": operating_income,
         "operating_income_error": operating_income_error,
         "operating_margin": operating_margin,

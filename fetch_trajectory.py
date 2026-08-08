@@ -75,15 +75,19 @@ def classify_confidence(flag_lists):
     the same language the underlying compute_*() functions already use —
     this does not re-judge tag quality, it reads what those functions
     already flagged.
-      - any flag mentioning "instead" (a substitute tag was used) -> "fallback"
+      - any flag mentioning "instead" (a substitute tag was used) or
+        "definition_variance" (the tag matches but the underlying economic
+        concept doesn't — e.g. LMT's cost-of-revenue tag bundling SG&A/R&D)
+        -> "fallback"
       - any flag mentioning "derived"/"proxy" (built from components) -> "derived"
       - otherwise -> "clean"
     "fallback" ranks worse than "derived": a component-sum proxy is a
-    documented GAAP identity and fully checkable; a substitute tag may
+    documented GAAP identity and fully checkable; a substitute tag — or a
+    tag whose economic definition doesn't match what's expected — may
     carry a different economic meaning altogether.
     """
     joined = " ".join(f for flags in flag_lists for f in flags).lower()
-    if "instead" in joined:
+    if "instead" in joined or "definition_variance" in joined:
         return "fallback"
     if "derived" in joined or "proxy" in joined:
         return "derived"
@@ -145,7 +149,8 @@ def gather_ticker_trajectory(ticker, us_gaap):
                 series["gross_margin"].append((year_label, None, "unresolved"))
                 print(f"[{ticker} FY{year_label}] gross margin UNRESOLVED: {margins['cost_of_revenue_error']}\n")
             else:
-                series["gross_margin"].append((year_label, margins["gross_margin"], "clean"))
+                gm_conf = classify_confidence([margins["gross_margin_flags"]])
+                series["gross_margin"].append((year_label, margins["gross_margin"], gm_conf))
 
             if margins["operating_margin"] is None:
                 series["operating_margin"].append((year_label, None, "unresolved"))
