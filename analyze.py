@@ -484,7 +484,12 @@ def verdict_html_block(report):
     return esc(verdict["verdict_line"]), signals_html, caveats_html
 
 
-def write_html(report, path):
+def render_html(report):
+    """Builds the full standalone HTML report page as a string. Split out
+    from write_html() (which just writes this to disk) so other callers —
+    e.g. the local web app in webapp.py — can get the same rendered report
+    without going through the filesystem. Purely a refactor: write_html()'s
+    own output is byte-for-byte unchanged."""
     ticker = report["ticker"]
     current = report["current"]
 
@@ -505,7 +510,7 @@ def write_html(report, path):
 
     scope_box_class, scope_html = scope_html_block(report)
 
-    page_html = HTML_TEMPLATE.format(
+    return HTML_TEMPLATE.format(
         ticker=esc(ticker),
         company_name=esc(current["company_name"]),
         cik=esc(current["cik"]),
@@ -522,6 +527,9 @@ def write_html(report, path):
         caveats_html=caveats_html,
     )
 
+
+def write_html(report, path):
+    page_html = render_html(report)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as f:
         f.write(page_html)

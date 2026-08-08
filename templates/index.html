@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>moat-engine — Analyze a ticker</title>
+<style>
+  body { font-family: -apple-system, Segoe UI, Helvetica, Arial, sans-serif; margin: 0; background: #f7f9fb; color: #1a1a1a; }
+  .hero { max-width: 640px; margin: 4rem auto; padding: 0 1.5rem; text-align: center; }
+  h1 { font-size: 1.7rem; margin-bottom: 0.3rem; color: #1f4e78; }
+  .subtitle { color: #555; margin-bottom: 2rem; font-size: 0.95rem; line-height: 1.4; }
+  form { display: flex; gap: 0.6rem; justify-content: center; margin-bottom: 0.5rem; }
+  input[type=text] { flex: 1; max-width: 220px; padding: 0.7rem 1rem; font-size: 1.05rem; border: 1px solid #ccc; border-radius: 6px; text-transform: uppercase; }
+  input[type=text]:focus { outline: 2px solid #1f4e78; }
+  button { padding: 0.7rem 1.4rem; font-size: 1.05rem; border: none; border-radius: 6px; background: #1f4e78; color: #fff; font-weight: 600; cursor: pointer; }
+  button:disabled { background: #7f9db3; cursor: wait; }
+  .loading { display: none; margin-top: 1rem; color: #1f4e78; font-size: 0.9rem; }
+  .loading.show { display: block; }
+  .error-box { background: #fdecea; border: 1px solid #f3b8b1; color: #5c1a14; border-radius: 6px; padding: 0.9rem 1.1rem; margin: 1.5rem 0; text-align: left; white-space: pre-wrap; }
+  .error-box strong { display: block; margin-bottom: 0.3rem; }
+  .examples { margin-top: 2.5rem; font-size: 0.85rem; color: #777; line-height: 1.5; }
+  .examples code { background: #eee; padding: 1px 5px; border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="hero">
+  <h1>moat-engine</h1>
+  <div class="subtitle">
+    Enter a ticker to pull its moat and credit metrics straight from SEC EDGAR —
+    every number carries a confidence flag (clean / derived / fallback / stale /
+    definition variance / unresolved) so you can see exactly how much to trust it.
+  </div>
+  <form id="analyze-form" method="POST" action="/analyze" onsubmit="return startLoading();">
+    <input type="text" name="ticker" placeholder="e.g. VRT" maxlength="10" required autofocus value="{{ ticker or '' }}">
+    <button type="submit" id="submit-btn">Analyze</button>
+  </form>
+  <div class="loading" id="loading">Analyzing&hellip; fetching SEC filings, this can take several seconds.</div>
+  {% if error %}
+  <div class="error-box"><strong>Could not analyze {{ ticker }}</strong>
+{{ error }}</div>
+  {% endif %}
+  <div class="examples">
+    Validated coverage: <code>VRT</code> <code>ETN</code> <code>PWR</code> <code>NVT</code>
+    <code>CAT</code> <code>HON</code> <code>ORCL</code> <code>CRM</code> <code>LMT</code> <code>VZ</code>
+    &mdash; but any ticker can be tried. Companies outside the validated TMT/Industrials scope
+    (banks, REITs, insurers, utilities, pharma&hellip;) still run, with a prominent caution
+    instead of a refusal.
+  </div>
+</div>
+<script>
+function startLoading() {
+  var btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Analyzing…';
+  document.getElementById('loading').classList.add('show');
+  return true;
+}
+</script>
+</body>
+</html>
