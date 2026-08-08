@@ -51,6 +51,19 @@ calls_made = 0
 REVENUE_TAGS = ["RevenueFromContractWithCustomerExcludingAssessedTax", "Revenues"]
 COST_OF_REVENUE_TAG_CANDIDATES = ["CostOfRevenue", "CostOfGoodsAndServicesSold"]
 
+# Fallback for filers that don't tag cost of revenue directly at all (e.g.
+# VZ) but do separately tag their full operating-expense total plus SG&A,
+# D&A, and goodwill impairment — cost of revenue is then the residual. See
+# cost_of_revenue_via_residual() for the guard that keeps this from
+# silently producing a wrong number on a filer whose expense structure
+# doesn't actually fit this four-line shape.
+GROSS_MARGIN_RESIDUAL_DERIVATION_TAGS = {
+    "costs_and_expenses": "CostsAndExpenses",
+    "sga": "SellingGeneralAndAdministrativeExpense",
+    "da": "DepreciationAndAmortization",
+    "goodwill_impairment": "GoodwillImpairmentLoss",
+}
+
 # General check, not a per-company hardcode: some filers (LMT confirmed) tag
 # a "cost of revenue" figure that's economically their entire cost base
 # (SG&A and R&D bundled in, not broken out separately on the face of the
@@ -245,6 +258,54 @@ def operating_income_via_proxy(ticker, us_gaap, fiscal_year_end):
     return value
 
 
+def cost_of_revenue_via_residual(us_gaap, fiscal_year_end, revenue):
+    """Fallback for filers that don't tag cost of revenue directly at all
+    (VZ confirmed) but do separately tag CostsAndExpenses (their full
+    operating-expense total), SG&A, D&A, and goodwill impairment — cost of
+    revenue is then the residual: CostsAndExpenses - SG&A - D&A -
+    GoodwillImpairmentLoss. A genuinely different derivation shape than
+    operating_income_via_proxy() above (which builds UP from Revenue - COGS
+    - SG&A - R&D): this one works DOWN from a known total, backing out the
+    components that are NOT cost of revenue.
+
+    Guarded, and deliberately conservative: returns None (never a wrong
+    number) unless ALL of the following hold —
+      1. every required component (CostsAndExpenses, SG&A, D&A, goodwill
+         impairment) has a fact for this fiscal_year_end — a residual
+         formula with a missing term isn't a residual, it's a guess.
+      2. the resulting cost of revenue is non-negative.
+      3. the resulting gross margin lands in [0, 100]%.
+    A residual formula can silently absorb unexpected line items on a
+    filer whose expense structure doesn't actually fit this exact
+    four-line shape (an extra "Other operating expense" line, a different
+    presentation order, etc.) — rather than risk a silently wrong number
+    on some future company, any implausible result falls through to
+    UNRESOLVED, exactly as if no candidate had matched at all.
+    """
+    facts = {}
+    for name, tag in GROSS_MARGIN_RESIDUAL_DERIVATION_TAGS.items():
+        fact = annual_duration_fact_at(us_gaap, tag, fiscal_year_end, required=False)
+        if fact is None:
+            return None
+        facts[name] = fact
+
+    cost_of_revenue = (
+        facts["costs_and_expenses"]["val"] - facts["sga"]["val"] - facts["da"]["val"] - facts["goodwill_impairment"]["val"]
+    )
+    if cost_of_revenue < 0 or revenue == 0:
+        return None
+    if not (0.0 <= (revenue - cost_of_revenue) / revenue <= 1.0):
+        return None
+
+    return {
+        "cost_of_revenue": cost_of_revenue,
+        "costs_and_expenses": facts["costs_and_expenses"]["val"],
+        "sga": facts["sga"]["val"],
+        "da": facts["da"]["val"],
+        "goodwill_impairment": facts["goodwill_impairment"]["val"],
+    }
+
+
 def compute_margins(ticker, us_gaap, fiscal_year_end=None):
     """If fiscal_year_end is None, targets the most recent 10-K (existing
     behavior, unchanged). If given an explicit period end, runs the exact
@@ -290,16 +351,35 @@ def compute_margins(ticker, us_gaap, fiscal_year_end=None):
     # --- Cost of revenue / gross margin (independent of operating margin) ---
     cost_of_revenue_tag, cost_of_revenue_val = None, None
     cost_of_revenue_error = None
+    cost_of_revenue_flags = []
     for tag in COST_OF_REVENUE_TAG_CANDIDATES:
         fact = annual_duration_fact_at(us_gaap, tag, fiscal_year_end, required=False)
         if fact is not None:
             cost_of_revenue_tag, cost_of_revenue_val = tag, fact["val"]
             break
+
+    if cost_of_revenue_tag is None:
+        residual = cost_of_revenue_via_residual(us_gaap, fiscal_year_end, revenue)
+        if residual is not None:
+            cost_of_revenue_val = residual["cost_of_revenue"]
+            cost_of_revenue_tag = (
+                "CostsAndExpenses - SellingGeneralAndAdministrativeExpense - "
+                "DepreciationAndAmortization - GoodwillImpairmentLoss (derived)"
+            )
+            cost_of_revenue_flags.append(
+                "No direct cost-of-revenue tag found; cost of revenue derived as "
+                f"CostsAndExpenses (${residual['costs_and_expenses']:,}) - SellingGeneralAndAdministrativeExpense "
+                f"(${residual['sga']:,}) - DepreciationAndAmortization (${residual['da']:,}) - "
+                f"GoodwillImpairmentLoss (${residual['goodwill_impairment']:,}) = ${cost_of_revenue_val:,}. "
+                "Hand-check against the filing's segment/product-category cost footnote if available."
+            )
+
     if cost_of_revenue_tag is None:
         candidates = tags_at_date(us_gaap, fiscal_year_end, "Cost")
         candidate_lines = "\n".join(f"    {tag}: ${val:,}" for tag, val in sorted(candidates.items()))
         cost_of_revenue_error = (
-            f"No cost-of-revenue tag found (tried: {', '.join(COST_OF_REVENUE_TAG_CANDIDATES)}). "
+            f"No cost-of-revenue tag found (tried: {', '.join(COST_OF_REVENUE_TAG_CANDIDATES)}, and the "
+            "CostsAndExpenses - SG&A - D&A - GoodwillImpairmentLoss residual derivation). "
             f"'Cost'-containing tags available as of {fiscal_year_end}:\n{candidate_lines}"
         )
 
@@ -343,7 +423,7 @@ def compute_margins(ticker, us_gaap, fiscal_year_end=None):
     # (SG&A/R&D included), not COGS-only. Kept separate from the general
     # "flags" list (which drives operating margin's own confidence) so this
     # doesn't affect operating margin's confidence — only gross margin's.
-    gross_margin_flags = []
+    gross_margin_flags = list(cost_of_revenue_flags)
     if gross_margin is not None and operating_margin is not None:
         if abs(gross_margin - operating_margin) < GROSS_MARGIN_DEFINITION_VARIANCE_THRESHOLD:
             gross_margin_flags.append(
